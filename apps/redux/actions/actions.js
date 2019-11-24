@@ -1,0 +1,5 @@
+class ACTIONTYPE {
+  static CHANGE_STATUS_FIRSTTIME = 'CHANGE_FIRSTTIME';
+}
+
+export default ACTIONTYPE;
