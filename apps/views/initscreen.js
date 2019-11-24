@@ -48,7 +48,7 @@ export default class InitScreen extends PureComponent {
       <View style={styles.container}>
         {permissiongrand == true && <MapsComponent />}
 
-        {/* <VoicesComponent /> */}
+        <VoicesComponent />
       </View>
     );
   }

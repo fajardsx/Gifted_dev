@@ -2,7 +2,8 @@ import React, {PureComponent} from 'react';
 import {Text, View, Alert} from 'react-native';
 //Third
 import Geolocation from 'react-native-geolocation-service';
-import MapView, {Polyline, Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import Polyline from '@mapbox/polyline';
 //local
 import Constants from '../configs/constant';
 import Buttons from '../components/Buttons';
@@ -16,6 +17,7 @@ export default class MapsComponent extends PureComponent {
       longitude: null,
       latitudeDelta: 0.0922,
       longitudeDelta: 0.0421,
+      direction: null,
     };
   }
   componentDidMount() {
@@ -26,21 +28,26 @@ export default class MapsComponent extends PureComponent {
       let author = Geolocation.requestAuthorization();
       this.ReqCurrentLocation();
     } catch (error) {
-      Alert.alert('location', error.message);
+      Alert.alert('location', error);
     }
   }
   ReqCurrentLocation() {
     try {
       Geolocation.getCurrentPosition(
         position =>
-          this.setState({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            longitudeDelta: 0.02,
-            latitudeDelta: 0.02,
-          }),
+          this.setState(
+            {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              longitudeDelta: 0.02,
+              latitudeDelta: 0.02,
+            },
+            () => {
+              this.onGetDirection();
+            },
+          ),
         error => {
-          console.log('error', error.message);
+          console.log('error', error);
           this.onReqUserLocation();
         },
         {
@@ -50,9 +57,50 @@ export default class MapsComponent extends PureComponent {
         },
       );
     } catch (error) {
-      Alert.alert('location', error.message);
+      Alert.alert('location', error);
     }
   }
+  //
+  onGetDirection() {
+    const {latitude, longitude} = this.state;
+
+    let concatLot = latitude + ',' + longitude;
+    console.log('onGetDirection', concatLot);
+    this.setState(
+      {
+        concat: concatLot,
+      },
+      () => {
+        this.getDirections(this.state.concatLot, '-6.2207017,106.7813473');
+      },
+    );
+  }
+  async getDirections(startlocate, destinationlocate) {
+    console.log('getDirections');
+    try {
+      let api = await fetch(
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${startlocate}&destination=${destinationlocate}&key=${Constants.MAP_KEYS}`,
+      );
+      let resultApi = await api.json();
+      console.log('resultApi', resultApi);
+      let points = Polyline.decode(
+        resultApi.routes[0].overview_polyline.points,
+      );
+      let coords = points.map((point, index) => {
+        return {
+          latitude: point[0],
+          longitude: point[1],
+        };
+      });
+      //console.log('coords', coords);
+      this.setState({direction: coords});
+      return coords;
+    } catch (error) {
+      console.log('coords', error);
+      return error;
+    }
+  }
+  //
   render() {
     const {latitude, longitude} = this.state;
     return (

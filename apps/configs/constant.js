@@ -10,6 +10,8 @@ class Constants {
   static P = 'POST';
   static G = 'GET';
   static PU = 'PUTS';
+  //MAP KEY
+  static MAP_KEYS = 'AIzaSyBdRkVZ941mf3epa2PRWQUid2QBwatwtlU';
   //LOCALE
   static ID = 'id-IN';
   static ENG = 'en-US';
