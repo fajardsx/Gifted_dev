@@ -4,17 +4,20 @@ import {Text, View, Alert} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Polyline from '@mapbox/polyline';
+import MapboxGL from '@mapbox/react-native-mapbox-gl';
 //local
 import Constants from '../configs/constant';
-import Buttons from '../components/Buttons';
+import Buttons from './Buttons';
 import {styles} from '../styles';
-export default class MapsComponent extends PureComponent {
+
+MapboxGL.setAccessToken(Constants.MAPBOX_KEYS);
+export default class MapsBoxComponent extends PureComponent {
   constructor(props) {
     super(props);
 
     this.state = {
-      latitude: null,
-      longitude: null,
+      latitude: -6.2188339,
+      longitude: 106.7950098,
       latitudeDelta: 0.0922,
       longitudeDelta: 0.0421,
       direction: null,
@@ -75,59 +78,17 @@ export default class MapsComponent extends PureComponent {
       },
     );
   }
-  async getDirections(startlocate, destinationlocate) {
-    console.log('getDirections');
-    try {
-      let api = await fetch(
-        `https://maps.googleapis.com/maps/api/directions/json?origin=${startlocate}&destination=${destinationlocate}&key=${Constants.MAP_KEYS}`,
-      );
-      let resultApi = await api.json();
-      console.log('resultApi', resultApi);
-      let points = Polyline.decode(
-        resultApi.routes[0].overview_polyline.points,
-      );
-      let coords = points.map((point, index) => {
-        return {
-          latitude: point[0],
-          longitude: point[1],
-        };
-      });
-      //console.log('coords', coords);
-      this.setState({direction: coords});
-      return coords;
-    } catch (error) {
-      console.log('coords', error);
-      return error;
-    }
-  }
   //
   render() {
     const {latitude, longitude} = this.state;
     return (
       <View style={styles.container}>
         {latitude && longitude && (
-          <MapView
-            style={{flex: 1}}
-            provider={PROVIDER_GOOGLE}
-            showsUserLocation
-            initialRegion={this.state}
-            region={{
-              latitude: latitude ? latitude : -6.2188339,
-              longitude: longitude ? longitude : 106.7950098,
-              latitudeDelta: this.state.latitudeDelta,
-              longitudeDelta: this.state.longitudeDelta,
-            }}>
-            {latitude && (
-              <Marker
-                coordinate={{
-                  latitude: latitude ? latitude : -6.2188339,
-                  longitude: longitude ? longitude : 106.7950098,
-                }}
-                title={'Your Location'}
-                description={`${latitude}.${longitude}`}
-              />
-            )}
-          </MapView>
+          <MapboxGL.MapView
+            ref={c => (this.mapbox = c)}
+            zoomLevel={1}
+            centerCoordinate={[latitude, longitude]}
+            style={{flex: 1}}></MapboxGL.MapView>
         )}
       </View>
     );

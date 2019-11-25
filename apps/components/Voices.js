@@ -1,12 +1,14 @@
 import React, {PureComponent} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, ScrollView} from 'react-native';
 //third
 import Voices from 'react-native-voice';
 import Tts from 'react-native-tts';
 //local
 import Constants from '../configs/constant';
 import Buttons from '../components/Buttons';
-import {styles} from '../styles';
+import {styles, fonts} from '../styles';
+import {convertWidth} from '../configs/utils';
+import {moderateScale} from '../styles/scaling';
 
 export default class VoicesComponent extends PureComponent {
   constructor(props) {
@@ -49,6 +51,7 @@ export default class VoicesComponent extends PureComponent {
     console.log('onSpeechError', e);
     this.setState({
       isStart: false,
+      results: ['Gagal Silahkan Ulangi Lagi'],
     });
   }
   onSpeechEnd(e) {
@@ -96,7 +99,7 @@ export default class VoicesComponent extends PureComponent {
         console.error(e);
       }
       clearTimeout(timeStart);
-    }, 3000);
+    }, 2000);
   }
   //TTS
   onCallTTS(value) {
@@ -107,20 +110,42 @@ export default class VoicesComponent extends PureComponent {
     const {results, isStart} = this.state;
     return (
       <View style={styles.container}>
-        <Text> Test Speech Reconizer </Text>
-        {results.length > 0 && <Text> Resulth</Text>}
-        {results.map((results, index) => {
-          return (
-            <Text
-              key={index}
-              style={{
-                color: '#0C0',
-                //borderWidth: 1,
-              }}>
-              {results}
-            </Text>
-          );
-        })}
+        <ScrollView contentContainerStyle={{flexGrow: 1}}>
+          <Text
+            style={{
+              color: '#010101',
+              //fontFamily: fonts.FONT_PRIMARY,
+              //borderWidth: 1,
+            }}>
+            Test Speech Reconizer
+          </Text>
+          {results.length > 0 && <Text>Hasil :</Text>}
+          {results.map((results, index) => {
+            return (
+              <View
+                key={index}
+                style={{width: convertWidth(100), justifyContent: 'center'}}>
+                <Text
+                  key={index}
+                  style={{
+                    color: '#010101',
+                    fontFamily: fonts.FONT_PRIMARY,
+                    fontSize: moderateScale(40),
+                  }}>
+                  {results}
+                </Text>
+                <Text
+                  key={index}
+                  style={{
+                    color: '#010101',
+                  }}>
+                  {results}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
+
         {isStart == false && (
           <Buttons
             stickybottom

@@ -1,3 +1,3 @@
 export default {
-  FONT_A: '',
+  FONT_PRIMARY: 'HandSignEST',
 };

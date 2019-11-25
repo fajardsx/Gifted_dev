@@ -4,6 +4,7 @@ import {styles} from '../styles';
 import VoicesComponent from '../components/Voices';
 import MapsComponent from '../components/Maps';
 import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import MapsBoxComponent from './../components/Mapsbox';
 
 export default class InitScreen extends PureComponent {
   constructor(props) {
@@ -46,7 +47,7 @@ export default class InitScreen extends PureComponent {
     const {permissiongrand} = this.state;
     return (
       <View style={styles.container}>
-        {permissiongrand == true && <MapsComponent />}
+        {permissiongrand == true && <MapsBoxComponent />}
 
         <VoicesComponent />
       </View>

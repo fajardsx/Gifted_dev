@@ -12,6 +12,8 @@ class Constants {
   static PU = 'PUTS';
   //MAP KEY
   static MAP_KEYS = 'AIzaSyBdRkVZ941mf3epa2PRWQUid2QBwatwtlU';
+  static MAPBOX_KEYS =
+    'pk.eyJ1IjoiZmFqYXJkc3giLCJhIjoiY2p1c202b3VpNDg3MjQzbnEydmV5bGJmNCJ9.rcCsymvwj6ubuu6gqUPJ5Q';
   //LOCALE
   static ID = 'id-IN';
   static ENG = 'en-US';
