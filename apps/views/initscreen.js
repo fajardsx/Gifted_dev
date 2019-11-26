@@ -2,7 +2,7 @@ import React, {PureComponent} from 'react';
 import {View, Text} from 'react-native';
 import {styles} from '../styles';
 import VoicesComponent from '../components/Voices';
-import MapsComponent from '../components/Maps';
+//import MapsComponent from '../components/Maps';
 import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import MapsBoxComponent from './../components/Mapsbox';
 
@@ -14,33 +14,34 @@ export default class InitScreen extends PureComponent {
     };
   }
   componentDidMount() {
-    this.onCheckPermission();
+    //this.onCheckPermission();
+    this.setState({permissiongrand: true});
   }
   //EVENT
   onCheckPermission() {
-    check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION)
-      .then(result => {
-        switch (result) {
-          case RESULTS.UNAVAILABLE:
-            console.log(
-              'This feature is not available (on this device / in this context)',
-            );
-            break;
-          case RESULTS.DENIED:
-            console.log(
-              'The permission has not been requested / is denied but requestable',
-            );
-            break;
-          case RESULTS.GRANTED:
-            console.log('The permission is granted');
-            this.setState({permissiongrand: true});
-            break;
-          case RESULTS.BLOCKED:
-            console.log('The permission is denied and not requestable anymore');
-            break;
-        }
-      })
-      .catch(error => console.log(error));
+    // check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION)
+    //   .then(result => {
+    //     switch (result) {
+    //       case RESULTS.UNAVAILABLE:
+    //         console.log(
+    //           'This feature is not available (on this device / in this context)',
+    //         );
+    //         break;
+    //       case RESULTS.DENIED:
+    //         console.log(
+    //           'The permission has not been requested / is denied but requestable',
+    //         );
+    //         break;
+    //       case RESULTS.GRANTED:
+    //         console.log('The permission is granted');
+    //         this.setState({permissiongrand: true});
+    //         break;
+    //       case RESULTS.BLOCKED:
+    //         console.log('The permission is denied and not requestable anymore');
+    //         break;
+    //     }
+    //   })
+    //   .catch(error => console.log(error));
   }
   //RENDER
   render() {
@@ -48,7 +49,6 @@ export default class InitScreen extends PureComponent {
     return (
       <View style={styles.container}>
         {permissiongrand == true && <MapsBoxComponent />}
-
         <VoicesComponent />
       </View>
     );

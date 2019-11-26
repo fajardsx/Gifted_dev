@@ -1,14 +1,33 @@
 import {createSwitchNavigator, createAppContainer} from 'react-navigation';
 import InitScreen from './views/initscreen';
+import {createStackNavigator} from 'react-navigation-stack';
+import Screentitle from './views/login/Screentitle';
+import Screenlogin from './views/login/Screenlogin';
 
-const MainApplication = createSwitchNavigator(
+const TitleScene = createStackNavigator(
   {
-    init_screen: {
-      screen: InitScreen,
+    titlescreen: {
+      screen: Screentitle,
+    },
+    loginscreen: {
+      screen: Screenlogin,
     },
   },
   {
-    initialRouteName: 'init_screen',
+    initialRouteName: 'titlescreen',
+  },
+);
+const MainApplication = createSwitchNavigator(
+  {
+    initscreen: {
+      screen: InitScreen,
+    },
+    titlescreen: {
+      screen: TitleScene,
+    },
+  },
+  {
+    initialRouteName: 'initscreen',
     headerMode: 'none',
   },
 );
