@@ -1,9 +1,9 @@
 import React, {PureComponent} from 'react';
-import {Text, View, TouchableOpacity} from 'react-native';
+import {Text, View, TouchableOpacity, TextInput} from 'react-native';
 import {convertWidth} from '../configs/utils';
 import {moderateScale} from '../styles/scaling';
 
-export default class Buttons extends PureComponent {
+export default class Forminput extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -46,20 +46,38 @@ export default class Buttons extends PureComponent {
   }
   render() {
     return (
-      <TouchableOpacity
-        style={[styles, this.props.style ? this.props.style : null]}
-        onPress={() => this.callonpress()}>
-        {this.props.children}
-      </TouchableOpacity>
+      <View
+        style={[
+          styles,
+          this.props.stylecontainer ? this.props.stylecontainer : null,
+        ]}>
+        <Text>{this.props.title ? this.props.title : ''}</Text>
+        <TextInput
+          keyboardType={
+            this.props.keyboardtype ? this.props.keyboardtype : 'default'
+          }
+          secureTextEntry={this.props.securetxt ? this.props.securetxt : false}
+          onChangeText={this.props.onChangeText}
+          defaultValue={this.props.defaultText}
+          style={[
+            stylesinput,
+            this.props.styleinput ? this.props.styleinput : null,
+          ]}
+          placeholder={
+            this.props.placeholder ? this.props.placeholder : this.props.title
+          }
+        />
+      </View>
     );
   }
 }
 
 let styles = {
-  width: convertWidth(100),
-  height: moderateScale(45),
-  backgroundColor: '#f1f1f1',
-  justifyContent: 'center',
-  alignItems: 'center',
+  flex: 1,
+  //justifyContent: 'center',
+  //alignItems: 'center',
   position: 'relative',
+};
+let stylesinput = {
+  borderBottomWidth: 1,
 };

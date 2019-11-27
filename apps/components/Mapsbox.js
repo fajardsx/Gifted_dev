@@ -101,8 +101,8 @@ export default class MapsBoxComponent extends PureComponent {
   renderAnnotations() {
     const items = [];
 
-    for (let i = 0; i < coordinates.length; i++) {
-      items.push(this.renderAnnotation(i));
+    for (let i = 0; i < coordinatesDummy.length; i++) {
+      //items.push(this.renderAnnotation(i));
     }
 
     return items;

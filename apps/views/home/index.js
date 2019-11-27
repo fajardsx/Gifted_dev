@@ -1,12 +1,12 @@
 import React, {PureComponent} from 'react';
-import {View, Text} from 'react-native';
-import {styles} from '../styles';
-import VoicesComponent from '../components/Voices';
-//import MapsComponent from '../components/Maps';
+import {View, Text, SafeAreaView} from 'react-native';
+import {styles} from '../../styles';
+import VoicesComponent from '../../components/Voices';
+//import MapsComponent from '../../components/Maps';
 import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
-import MapsBoxComponent from './../components/Mapsbox';
+import MapsBoxComponent from '../../components/Mapsbox';
 
-export default class InitScreen extends PureComponent {
+export default class HomeScreen extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -16,7 +16,7 @@ export default class InitScreen extends PureComponent {
   componentDidMount() {
     //this.onCheckPermission();
     this.setState({permissiongrand: true});
-    this.props.navigation.replace('titlescreen');
+    //this.props.navigation.navigate('titlescreen');
   }
   //EVENT
   onCheckPermission() {
@@ -48,10 +48,11 @@ export default class InitScreen extends PureComponent {
   render() {
     const {permissiongrand} = this.state;
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         {/* {permissiongrand == true && <MapsBoxComponent />}
-        <VoicesComponent /> */}
-      </View>
+         */}
+        <VoicesComponent />
+      </SafeAreaView>
     );
   }
 }
