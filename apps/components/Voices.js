@@ -7,9 +7,11 @@ import Tts from 'react-native-tts';
 import Constants from '../configs/constant';
 import Buttons from '../components/Buttons';
 import {styles, fonts} from '../styles';
-import {convertWidth} from '../configs/utils';
+import {convertWidth, convertHeight, callVibrate} from '../configs/utils';
 import {moderateScale} from '../styles/scaling';
+import IconMic from '../assets/images/vector/microphone.svg';
 
+const iconsize = moderateScale(30);
 export default class VoicesComponent extends PureComponent {
   constructor(props) {
     super(props);
@@ -49,9 +51,10 @@ export default class VoicesComponent extends PureComponent {
   }
   onSpeechError(e) {
     console.log('onSpeechError', e);
+    this.onCallTTS('Silahkan Ulangi Lagi');
     this.setState({
       isStart: false,
-      results: ['Gagal Silahkan Ulangi Lagi'],
+      results: [],
     });
   }
   onSpeechEnd(e) {
@@ -79,13 +82,15 @@ export default class VoicesComponent extends PureComponent {
         results: e.value,
       },
       () => {
+        this.props.onCallback(this.state.results[0]);
         this.onCallTTS(this.state.results[0]);
       },
     );
   }
   onStartRecognition(e) {
     console.log('START SPEECH');
-    this.onCallTTS('Silahkan Mulai Berbicara');
+    callVibrate();
+    this.onCallTTS('Cari Lokasi');
     let timeStart = setTimeout(async () => {
       this.setState({
         recognized: '',
@@ -109,50 +114,46 @@ export default class VoicesComponent extends PureComponent {
   render() {
     const {results, isStart} = this.state;
     return (
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={{flexGrow: 1}}>
-          <Text
-            style={{
-              color: '#010101',
-              //fontFamily: fonts.FONT_PRIMARY,
-              //borderWidth: 1,
-            }}>
-            Test Speech Reconizer
-          </Text>
-          {results.length > 0 && <Text>Hasil :</Text>}
-          {results.map((results, index) => {
-            return (
-              <View
-                key={index}
-                style={{width: convertWidth(100), justifyContent: 'center'}}>
-                <Text
-                  key={index}
-                  style={{
-                    color: '#010101',
-                    fontFamily: fonts.FONT_PRIMARY,
-                    fontSize: moderateScale(40),
-                  }}>
-                  {results}
-                </Text>
-                <Text
-                  key={index}
-                  style={{
-                    color: '#010101',
-                  }}>
-                  {results}
-                </Text>
-              </View>
-            );
-          })}
-        </ScrollView>
-
+      <View
+        style={[
+          {
+            position: 'absolute',
+            top: convertHeight(50),
+            left: convertWidth(30),
+            borderRadius: 5,
+            overflow: 'hidden',
+            borderWidth: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          },
+          this.props.style ? this.props.style : null,
+        ]}>
         {isStart == false && (
           <Buttons
-            stickybottom
-            backgroundColor={'#f0f0f0'}
+            style={{
+              backgroundColor: '#f0f0f0',
+              width: convertWidth(40),
+              height: convertHeight(15),
+            }}
             onPressButton={this.onStartRecognition.bind(this)}>
-            <Text style={{borderWidth: 0}}>Start Speech</Text>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text style={{borderWidth: 0}}>{'Cari\nLokasi'}</Text>
+              <IconMic height={iconsize} width={iconsize} />
+            </View>
           </Buttons>
+        )}
+        {isStart == true && (
+          <View
+            style={{
+              alignItems: 'center',
+              backgroundColor: '#f0f0f0',
+              width: convertWidth(40),
+              height: convertHeight(15),
+              justifyContent: 'center',
+            }}>
+            <IconMic height={iconsize * 2} width={iconsize * 2} />
+            <Text style={{borderWidth: 0}}>{'Mendengarkan'}</Text>
+          </View>
         )}
       </View>
     );

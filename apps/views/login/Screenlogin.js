@@ -5,6 +5,7 @@ import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
 import {convertWidth} from '../../configs/utils';
 import Forminput from '../../components/Forminput';
+import {callVibrate} from './../../configs/utils';
 
 class Screenlogin extends Component {
   constructor(props) {
@@ -23,6 +24,7 @@ class Screenlogin extends Component {
   onTryLogin() {
     // console.log('screenlogin', this.state.emailtxt);
     // console.log('screenlogin', this.state.passwordtxt);
+    callVibrate();
     this.props.navigation.navigate('inappscreen');
   }
   render() {
@@ -47,6 +49,7 @@ class Screenlogin extends Component {
             stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
             defaultText={this.state.emailtxt}
             onChangeText={this.onChangeEmailInput}
+            styleinput={{borderBottomWidth: 1}}
             title={'Email'}
           />
           <Forminput
@@ -54,6 +57,7 @@ class Screenlogin extends Component {
             stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
             defaultText={this.state.epasswordtxtailtxt}
             onChangeText={this.onChangePasswordInput}
+            styleinput={{borderBottomWidth: 1}}
             title={'Password'}
           />
         </View>

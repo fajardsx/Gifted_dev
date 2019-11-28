@@ -6,6 +6,7 @@ import {
 } from 'react-native-responsive-screen';
 import {colors} from '../styles/colors';
 import {moderateScale} from '../styles/scaling';
+import Constants from './constant';
 const vibrateduration = 1000;
 //validate email
 export function validateEmail(text) {
@@ -44,9 +45,9 @@ export function deviceWidth() {
 export function deviceHeight() {
   return Dimensions.get('window').height;
 }
-
+//Button Vibreate
 export function callVibrate() {
-  let vibrateduration = 1000;
+  let vibrateduration = 100;
   Vibration.vibrate(vibrateduration);
   let limit = setTimeout(() => {
     Vibration.cancel();
@@ -54,5 +55,16 @@ export function callVibrate() {
   }, vibrateduration);
   return limit;
 }
-
+//COMMAND
+export function findCommad(id) {
+  let data = 'Text';
+  switch (id.toLowerCase()) {
+    case 'cari':
+      return Constants.COMMAND_CARI;
+    case 'tambah':
+      return Constants.COMMAND_TAMBAH;
+    default:
+      return -1;
+  }
+}
 //--------------------------------------------------------------------------------------------

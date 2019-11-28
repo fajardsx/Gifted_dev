@@ -51,7 +51,10 @@ export default class Forminput extends PureComponent {
           styles,
           this.props.stylecontainer ? this.props.stylecontainer : null,
         ]}>
-        <Text>{this.props.title ? this.props.title : ''}</Text>
+        {this.props.title && (
+          <Text>{this.props.title ? this.props.title : ''}</Text>
+        )}
+
         <TextInput
           keyboardType={
             this.props.keyboardtype ? this.props.keyboardtype : 'default'
@@ -59,12 +62,12 @@ export default class Forminput extends PureComponent {
           secureTextEntry={this.props.securetxt ? this.props.securetxt : false}
           onChangeText={this.props.onChangeText}
           defaultValue={this.props.defaultText}
-          style={[
-            stylesinput,
-            this.props.styleinput ? this.props.styleinput : null,
-          ]}
+          style={[this.props.styleinput ? this.props.styleinput : null]}
+          textAlignVertical={'center'}
           placeholder={
-            this.props.placeholder ? this.props.placeholder : this.props.title
+            this.props.placeholder != null
+              ? this.props.placeholder
+              : this.props.title
           }
         />
       </View>

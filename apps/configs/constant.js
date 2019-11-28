@@ -35,6 +35,9 @@ class Constants {
   };
   //REST TIMEOUT
   static TIME_OUT = 10000;
+  //COMMAD
+  static COMMAND_CARI = 1;
+  static COMMAND_TAMBAH = 2;
 }
 
 export default Constants;

@@ -3,7 +3,7 @@ import {View, Text, SafeAreaView} from 'react-native';
 import {styles} from '../../styles';
 import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
-import {convertWidth} from '../../configs/utils';
+import {convertWidth, callVibrate} from '../../configs/utils';
 import Forminput from '../../components/Forminput';
 
 class ScreenRegister extends Component {
@@ -28,6 +28,7 @@ class ScreenRegister extends Component {
     // console.log('screenlogin', this.state.emailtxt);
     // console.log('screenlogin', this.state.passwordtxt);
     // console.log('screenlogin', this.state.nametxt);
+    callVibrate();
     this.props.navigation.navigate('inappscreen');
   }
   render() {
@@ -53,12 +54,14 @@ class ScreenRegister extends Component {
             stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
             defaultText={this.state.emailtxt}
             onChangeText={this.onChangeEmailInput}
+            styleinput={{borderBottomWidth: 1}}
             title={'Email'}
           />
           <Forminput
             stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
             defaultText={this.state.nametxt}
             onChangeText={this.onChangeNameInput}
+            styleinput={{borderBottomWidth: 1}}
             title={'Name'}
           />
           <Forminput
@@ -66,6 +69,7 @@ class ScreenRegister extends Component {
             stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
             defaultText={this.state.epasswordtxtailtxt}
             onChangeText={this.onChangePasswordInput}
+            styleinput={{borderBottomWidth: 1}}
             title={'Password'}
           />
         </View>

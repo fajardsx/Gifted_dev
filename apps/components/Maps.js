@@ -15,8 +15,8 @@ export default class MapsComponent extends PureComponent {
     this.state = {
       latitude: null,
       longitude: null,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421,
+      latitudeDelta: 1,
+      longitudeDelta: 1,
       direction: null,
     };
   }
@@ -39,8 +39,8 @@ export default class MapsComponent extends PureComponent {
             {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              longitudeDelta: 0.02,
-              latitudeDelta: 0.02,
+              longitudeDelta: 0.005,
+              latitudeDelta: 0.005,
             },
             () => {
               this.onGetDirection();
@@ -117,16 +117,14 @@ export default class MapsComponent extends PureComponent {
               latitudeDelta: this.state.latitudeDelta,
               longitudeDelta: this.state.longitudeDelta,
             }}>
-            {latitude && (
-              <Marker
-                coordinate={{
-                  latitude: latitude ? latitude : -6.2188339,
-                  longitude: longitude ? longitude : 106.7950098,
-                }}
-                title={'Your Location'}
-                description={`${latitude}.${longitude}`}
-              />
-            )}
+            <Marker
+              coordinate={{
+                latitude: latitude ? latitude : -6.2188339,
+                longitude: longitude ? longitude : 106.7950098,
+              }}
+              title={'Your Location'}
+              description={`${latitude}.${longitude}`}
+            />
           </MapView>
         )}
       </View>
