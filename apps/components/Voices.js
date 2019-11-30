@@ -7,7 +7,12 @@ import Tts from 'react-native-tts';
 import Constants from '../configs/constant';
 import Buttons from '../components/Buttons';
 import {styles, fonts} from '../styles';
-import {convertWidth, convertHeight, callVibrate} from '../configs/utils';
+import {
+  convertWidth,
+  convertHeight,
+  callVibrate,
+  onCallTTS,
+} from '../configs/utils';
 import {moderateScale} from '../styles/scaling';
 import IconMic from '../assets/images/vector/microphone.svg';
 
@@ -23,17 +28,22 @@ export default class VoicesComponent extends PureComponent {
       isStart: false,
     };
 
-    Voices.onSpeechStart = this.onSpeechStart.bind(this);
-    Voices.onSpeechEnd = this.onSpeechEnd.bind(this);
-    Voices.onSpeechRecognized = this.onSpeechRecognized.bind(this);
-    Voices.onSpeechResults = this.onSpeechResult.bind(this);
-    Voices.onSpeechError = this.onSpeechError.bind(this);
+    this.init();
   }
   componentDidMount() {
     this.checkSupport();
   }
   componentWillUnmount() {
+    console.log('Voices Destroy');
     Voices.destroy().then(Voices.removeAllListeners);
+  }
+  init() {
+    console.log('Voices Init');
+    Voices.onSpeechStart = this.onSpeechStart.bind(this);
+    Voices.onSpeechEnd = this.onSpeechEnd.bind(this);
+    Voices.onSpeechRecognized = this.onSpeechRecognized.bind(this);
+    Voices.onSpeechResults = this.onSpeechResult.bind(this);
+    Voices.onSpeechError = this.onSpeechError.bind(this);
   }
   //EVENT
   async checkSupport() {
@@ -51,7 +61,7 @@ export default class VoicesComponent extends PureComponent {
   }
   onSpeechError(e) {
     console.log('onSpeechError', e);
-    this.onCallTTS('Silahkan Ulangi Lagi');
+    this.thisCallTTS('Silahkan Ulangi Lagi');
     this.setState({
       isStart: false,
       results: [],
@@ -83,14 +93,20 @@ export default class VoicesComponent extends PureComponent {
       },
       () => {
         this.props.onCallback(this.state.results[0]);
-        this.onCallTTS(this.state.results[0]);
+        this.thisCallTTS(this.state.results[0]);
       },
     );
   }
   onStartRecognition(e) {
     console.log('START SPEECH');
     callVibrate();
-    this.onCallTTS('Cari Lokasi');
+    if (Constants.DEV_MODE) {
+      return this.props.navigation.navigate('resultsearchscreen', {
+        valuesearch: '',
+        functOnProcess: () => this.props.onProcess(),
+      });
+    }
+    this.thisCallTTS('Cari Lokasi');
     let timeStart = setTimeout(async () => {
       this.setState({
         recognized: '',
@@ -107,8 +123,8 @@ export default class VoicesComponent extends PureComponent {
     }, 2000);
   }
   //TTS
-  onCallTTS(value) {
-    Tts.speak(value);
+  thisCallTTS(value) {
+    onCallTTS(value);
   }
   //RENDER
   render() {
@@ -128,7 +144,7 @@ export default class VoicesComponent extends PureComponent {
           },
           this.props.style ? this.props.style : null,
         ]}>
-        {isStart == false && (
+        {isStart === false && (
           <Buttons
             style={{
               backgroundColor: '#f0f0f0',
@@ -142,7 +158,7 @@ export default class VoicesComponent extends PureComponent {
             </View>
           </Buttons>
         )}
-        {isStart == true && (
+        {isStart === true && (
           <View
             style={{
               alignItems: 'center',

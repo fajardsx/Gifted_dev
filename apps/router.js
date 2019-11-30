@@ -6,6 +6,7 @@ import Screentitle from './views/login/Screentitle';
 import Screenlogin from './views/login/Screenlogin';
 import ScreenRegister from './views/login/Screenregister';
 import HomeScreen from './views/home';
+import searchresultscreen from './views/home/searchresultscreen';
 
 const TitleScene = createStackNavigator(
   {
@@ -29,13 +30,16 @@ const InAppScene = createStackNavigator(
     homescreen: {
       screen: HomeScreen,
     },
+    resultsearchscreen: {
+      screen: searchresultscreen,
+    },
   },
   {
     initialRouteName: 'homescreen',
     headerMode: 'none',
   },
 );
-const MainApplication = createStackNavigator(
+const MainApplication = createSwitchNavigator(
   {
     initscreen: {
       screen: InitScreen,

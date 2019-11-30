@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, Image} from 'react-native';
 import {styles} from '../../styles';
 import Buttons from '../../components/Buttons';
 import {convertWidth} from '../../configs/utils';
@@ -19,7 +19,11 @@ class Screentitle extends Component {
     return (
       <View style={styles.container}>
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <Text style={{fontSize: moderateScale(21)}}>Gifted</Text>
+          <Image
+            style={{width: convertWidth(50)}}
+            source={require('../../assets/images/gifted.jpg')}
+            resizeMode={'contain'}
+          />
         </View>
         <View style={{flex: 1}}>
           <Buttons

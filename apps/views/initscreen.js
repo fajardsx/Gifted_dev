@@ -16,7 +16,7 @@ export default class InitScreen extends PureComponent {
   componentDidMount() {
     //this.onCheckPermission();
     this.setState({permissiongrand: true});
-    this.props.navigation.replace('titlescreen');
+    this.props.navigation.navigate('titlescreen');
   }
   //EVENT
   onCheckPermission() {

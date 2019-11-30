@@ -1,0 +1,20 @@
+class MODAL {
+  static user = {
+    name: '',
+    email: '',
+    password: '',
+    location: null,
+  };
+  static friend = {
+    id: -1,
+    nama: '',
+    kordinat: {
+      latitude: -6.1904393,
+      longitude: 106.7973387,
+      longitudeDelta: 0.005,
+      latitudeDelta: 0.005,
+    },
+  };
+}
+
+export default MODAL;

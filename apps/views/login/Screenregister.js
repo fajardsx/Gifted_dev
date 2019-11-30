@@ -5,6 +5,10 @@ import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
 import {convertWidth, callVibrate} from '../../configs/utils';
 import Forminput from '../../components/Forminput';
+//REDUX
+import {connect} from 'react-redux';
+import ACTION_TYPE from '../../redux/actions/actions';
+import MODAL from '../../redux/modals';
 
 class ScreenRegister extends Component {
   constructor(props) {
@@ -28,6 +32,12 @@ class ScreenRegister extends Component {
     // console.log('screenlogin', this.state.emailtxt);
     // console.log('screenlogin', this.state.passwordtxt);
     // console.log('screenlogin', this.state.nametxt);
+    let usermodal = MODAL.user;
+
+    usermodal.name = this.state.nametxt;
+    usermodal.email = this.state.emailtxt;
+    usermodal.password = this.state.passwordtxt;
+    this.props.updateuser(usermodal);
     callVibrate();
     this.props.navigation.navigate('inappscreen');
   }
@@ -89,5 +99,18 @@ class ScreenRegister extends Component {
     );
   }
 }
-
-export default ScreenRegister;
+function mapStateToProps(state) {
+  return {
+    friendlist: state.friendlist,
+  };
+}
+function dispatchToProps(dispatch) {
+  return {
+    updateuser: user =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_USER,
+        value: user,
+      }),
+  };
+}
+export default connect(mapStateToProps, dispatchToProps)(ScreenRegister);

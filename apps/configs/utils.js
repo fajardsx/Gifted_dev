@@ -7,6 +7,7 @@ import {
 import {colors} from '../styles/colors';
 import {moderateScale} from '../styles/scaling';
 import Constants from './constant';
+import Tts from 'react-native-tts';
 const vibrateduration = 1000;
 //validate email
 export function validateEmail(text) {
@@ -66,5 +67,10 @@ export function findCommad(id) {
     default:
       return -1;
   }
+}
+//TTS
+//TTS
+export function onCallTTS(value) {
+  return Tts.speak(value);
 }
 //--------------------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, Image} from 'react-native';
 import {styles} from '../../styles';
 import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
@@ -31,13 +31,11 @@ class Screenlogin extends Component {
     return (
       <View style={styles.container}>
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <Text
-            style={{
-              fontSize: moderateScale(21),
-              paddingBottom: moderateScale(50),
-            }}>
-            Gifted
-          </Text>
+          <Image
+            style={{width: convertWidth(50), height: moderateScale(200)}}
+            source={require('../../assets/images/gifted.jpg')}
+            resizeMode={'contain'}
+          />
           <Text
             style={{
               fontSize: moderateScale(15),
