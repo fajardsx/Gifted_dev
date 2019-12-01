@@ -9,6 +9,9 @@ const initState = {
     {
       id: 1,
       nama: 'Agung',
+      avatar:
+        'https://images.pexels.com/photos/414612/pexels-photo-414612.jpeg',
+      alamat: '',
       kordinat: {
         latitude: -6.1904393,
         longitude: 106.7973387,
@@ -19,6 +22,9 @@ const initState = {
     {
       id: 2,
       nama: 'Fajar',
+      avatar:
+        'https://images.pexels.com/photos/237018/pexels-photo-237018.jpeg',
+      alamat: '',
       kordinat: {
         latitude: -6.203356,
         longitude: 106.766962,

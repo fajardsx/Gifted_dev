@@ -39,7 +39,7 @@ class Constants {
   static COMMAND_CARI = 1;
   static COMMAND_TAMBAH = 2;
   //DEBUG
-  static DEV_MODE = false;
+  static DEV_MODE = true;
 }
 
 export default Constants;

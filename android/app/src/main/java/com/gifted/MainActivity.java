@@ -1,4 +1,4 @@
-package com.voicenavi;
+package com.gifted;
 
 import com.facebook.react.ReactActivity;
 

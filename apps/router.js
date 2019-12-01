@@ -7,6 +7,10 @@ import Screenlogin from './views/login/Screenlogin';
 import ScreenRegister from './views/login/Screenregister';
 import HomeScreen from './views/home';
 import searchresultscreen from './views/home/searchresultscreen';
+import SettingScreen from './views/settings';
+import KontakScreen from './views/settings/kontaksaya';
+import CariKontakScreen from './views/settings/carikontak';
+import KontakDetailScreen from './views/kontak';
 
 const TitleScene = createStackNavigator(
   {
@@ -25,6 +29,22 @@ const TitleScene = createStackNavigator(
     headerMode: 'none',
   },
 );
+const KontakScene = createAppContainer(
+  createStackNavigator(
+    {
+      detailscreen: {
+        screen: KontakDetailScreen,
+      },
+      detaileditscreen: {
+        screen: KontakDetailScreen,
+      },
+    },
+    {
+      initialRouteName: 'detailscreen',
+      headerMode: 'none',
+    },
+  ),
+);
 const InAppScene = createStackNavigator(
   {
     homescreen: {
@@ -32,6 +52,18 @@ const InAppScene = createStackNavigator(
     },
     resultsearchscreen: {
       screen: searchresultscreen,
+    },
+    settingscreen: {
+      screen: SettingScreen,
+    },
+    kontakscreen: {
+      screen: KontakScreen,
+    },
+    carikontakscreen: {
+      screen: CariKontakScreen,
+    },
+    detailkontakscreen: {
+      screen: props => <KontakScene screenProps={props} />,
     },
   },
   {

@@ -1,10 +1,11 @@
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import {Text, View, Alert, Image} from 'react-native';
 //Third
 import Geolocation from 'react-native-geolocation-service';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Polyline from '@mapbox/polyline';
 import MapboxGL from '@react-native-mapbox-gl/maps';
+import {lineString as makeLineString} from '@turf/helpers';
 //REDUX
 import {connect} from 'react-redux';
 import ACTION_TYPE from '../redux/actions/actions';
@@ -12,21 +13,20 @@ import ACTION_TYPE from '../redux/actions/actions';
 import Constants from '../configs/constant';
 import Buttons from './Buttons';
 import {styles, colors} from '../styles';
+import PulseCircleLayer from './PulseCircleLayer';
+import {directionClient} from './MapClient';
+import RouteSimulator from './RouterSimulator';
+import {
+  convertWidth,
+  convertHeight,
+  callVibrate,
+  onCallTTS,
+} from '../configs/utils';
+import {moderateScale} from '../styles/scaling';
+import Bubble from './Bubble';
 
 MapboxGL.setAccessToken(Constants.MAPBOX_KEYS);
-const coordinatesDummy = [
-  [-73.98330688476561, 40.76975180901395],
-  [-73.96682739257812, 40.761560925502806],
-  [-74.00751113891602, 40.746346606483826],
-  [-73.95343780517578, 40.7849607714286],
-  [-73.99017333984375, 40.71135347314246],
-  [-73.98880004882812, 40.758960433915284],
-  [-73.96064758300781, 40.718379593199494],
-  [-73.95172119140624, 40.82731951134558],
-  [-73.9829635620117, 40.769101775774935],
-  [-73.9822769165039, 40.76273111352534],
-  [-73.98571014404297, 40.748947591479705],
-];
+
 const mapstyles = {
   directionsLine: {
     lineWidth: 3,
@@ -36,22 +36,46 @@ const mapstyles = {
   },
 };
 let context = null;
-class MapsBoxComponent extends PureComponent {
+class MapsBoxComponent extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       latitude: -6.2188339,
       longitude: 106.7950098,
       latitudeDelta: 0.0922,
       longitudeDelta: 0.0421,
       direction: null,
+      routeSimulator: null,
+      currentpoint: null,
+      destinationPoint: null,
+      navi: null,
+      userSelectedUserTrackingMode: 'none',
+      target: null,
+      zoom: 17,
     };
     context = this;
+    this.onstartsimulator = this.onStart.bind(this);
+    this.onRegionDidChange = this.onRegionDidChange.bind(this);
   }
   componentDidMount() {
     this.onReqUserLocation();
+    this.getInfoUserTrackingMode();
     MapboxGL.setTelemetryEnabled(false);
+  }
+  onStart() {
+    console.log('mapsbox.js => onStart');
+    callVibrate();
+    onCallTTS('Memulai Navigasi');
+    const routeSimulator = new RouteSimulator(this.state.direction);
+    routeSimulator.addListener(currentpoint => this.setState({currentpoint}));
+    routeSimulator.start();
+    this.setState({routeSimulator});
+  }
+  onStop() {
+    if (this.state.routeSimulator) {
+      this.state.routeSimulator.stop();
+    }
+    this.props.onCancel();
   }
   static getDerivedStateFromProps(props, state) {
     if (props.target !== state.target) {
@@ -105,9 +129,8 @@ class MapsBoxComponent extends PureComponent {
     if (target) {
       const {latitude, longitude} = this.state;
 
-      let concatLot = longitude + ',' + latitude;
-      let locTarget =
-        target.kordinat.longitude + ',' + target.kordinat.latitude;
+      let concatLot = [longitude, latitude];
+      let locTarget = [target.kordinat.longitude, target.kordinat.latitude];
       console.log('onGetDirection', concatLot);
 
       this.getDirectionsNavigation(concatLot, locTarget);
@@ -118,36 +141,61 @@ class MapsBoxComponent extends PureComponent {
     console.log('getDirections');
     console.log('from', startlocate);
     console.log('to', destinationlocate);
-    let url = `https://api.mapbox.com/directions/v5/mapbox/walking/${startlocate};${destinationlocate}?approaches=unrestricted;curb&access_token=${Constants.MAPBOX_KEYS}&geometries=geojson`;
-    console.log('to', url);
+    console.log(
+      'MapboxGL.geoUtils.makePoint ',
+      MapboxGL.geoUtils.makePoint(destinationlocate),
+    );
+
+    const reqOptons = {
+      waypoints: [{coordinates: startlocate}, {coordinates: destinationlocate}],
+      profile: 'walking',
+      geometries: 'geojson',
+    };
+
     try {
-      let api = await fetch(url);
-      let resultApi = await api.json();
-      console.log('resultApi', resultApi);
-      let points = Polyline.decode(resultApi.routes[0].geometry);
-      let coords = points.map((point, index) => {
-        return {
-          latitude: point[0],
-          longitude: point[1],
-        };
+      const res = await directionClient.getDirections(reqOptons).send();
+      this.setState({
+        direction: makeLineString(res.body.routes[0].geometry.coordinates),
+        navi: res,
+        destinationPoint: destinationlocate,
       });
-      // console.log('coords', Object.assign({}, coords));
-      this.setState({direction: resultApi.routes[0].geometry});
+      console.log('mapbox.js => getDirectionsNavigation', res);
       return true;
     } catch (error) {
-      console.log('coords', error);
+      console.log('mapsbox.js => getDirectionsNavigation', error);
       return error;
     }
+
+    // let url = `https://api.mapbox.com/directions/v5/mapbox/walking/${startlocate};${destinationlocate}?approaches=unrestricted;curb&access_token=${Constants.MAPBOX_KEYS}&geometries=geojson`;
+    // console.log('to', url);
+    // try {
+    //   let api = await fetch(url);
+    //   let resultApi = await api.json();
+    //   console.log('resultApi', resultApi);
+    //   let points = Polyline.decode(resultApi.routes[0].geometry);
+    //   let coords = points.map((point, index) => {
+    //     return {
+    //       latitude: point[0],
+    //       longitude: point[1],
+    //     };
+    //   });
+    //   // console.log('coords', Object.assign({}, coords));
+    //   this.setState({direction: resultApi.routes[0].geometry, navi: resultApi});
+    //   return true;
+    // } catch (error) {
+    //   console.log('coords', error);
+    //   return error;
+    // }
   }
   //
   async onRegionDidChange() {
-    // const center = await this.mapbox.getCoordinateFromView();
-    // this.setState({center});
+    const zoom = await this.mapbox.getZoom();
+    this.setState({zoom});
   }
   renderAnnotations() {
     const {direction} = this.state;
     const items = [];
-    console.log('renderRouteAnnotation', direction);
+    console.log('renderAnnotations', direction);
     if (direction == null) {
       return null;
     }
@@ -180,30 +228,184 @@ class MapsBoxComponent extends PureComponent {
         <View style={styles.annotationContainer}>
           <View style={styles.annotationFill} />
         </View>
-        <MapboxGL.Callout title="An annotation here!" />
+        <MapboxGL.Callout title="Your Here!" />
       </MapboxGL.PointAnnotation>
     );
   }
   //
   renderLine() {
     const {direction} = this.state;
-    console.log('renderRouteAnnotation', direction);
+
     if (direction == null) {
       return null;
     }
+    console.log('renderLine', direction);
     return (
-      <MapboxGL.ShapeSource id="mapbox-directions-source" shape={direction}>
+      <MapboxGL.ShapeSource id="routeSource" shape={direction}>
         <MapboxGL.LineLayer
-          id="mapbox-directions-line"
-          //belowLayerID={'store-locator-places-unselected-symbols'}
-          style={mapstyles.directionsLine}
+          id="routeFill"
+          belowLayerID={'originInnerCircle'}
+          style={layerStyles.route}
         />
       </MapboxGL.ShapeSource>
     );
   }
   //
+  renderCurrentPoint() {
+    const {currentpoint} = this.state;
+
+    if (currentpoint == null) {
+      return;
+    }
+    console.log('renderCurrentPoint', currentpoint);
+    return (
+      <PulseCircleLayer
+        shape={currentpoint}
+        aboveLayerID="destinationInnerCircle"
+      />
+    );
+  }
+  renderProgressLine() {
+    const {currentpoint, direction} = this.state;
+
+    if (!currentpoint || !direction) {
+      return null;
+    }
+    console.log('renderProgressLine', currentpoint);
+    const {nearestIndex} = currentpoint.properties;
+    const coords = direction.geometry.coordinates.filter(
+      (c, i) => i <= nearestIndex,
+    );
+    coords.push(currentpoint.geometry.coordinates);
+
+    if (coords.length < 2) {
+      return null;
+    }
+    const lineString = makeLineString(coords);
+    return (
+      <MapboxGL.Animated.ShapeSource id="progressSource" shape={lineString}>
+        <MapboxGL.Animated.LineLayer
+          id="progressFill"
+          style={layerStyles.progress}
+          aboveLayerID="routeFill"
+        />
+      </MapboxGL.Animated.ShapeSource>
+    );
+  }
+  //
+  renderOrigin() {
+    const {currentpoint, direction, destinationPoint} = this.state;
+    let backgroundColor = 'white';
+
+    if (currentpoint) {
+      backgroundColor = '#314ccd';
+    }
+
+    const style = [layerStyles.origin, {circleColor: backgroundColor}];
+
+    return (
+      <MapboxGL.ShapeSource
+        id="origin"
+        shape={MapboxGL.geoUtils.makePoint(destinationPoint)}>
+        <MapboxGL.Animated.CircleLayer id="originInnerCircle" style={style} />
+      </MapboxGL.ShapeSource>
+    );
+  }
+  //
+  renderTargetPoint() {
+    const {target} = this.state;
+    if (target == null) {
+      return;
+    }
+    return (
+      <PulseCircleLayer
+        shape={MapboxGL.geoUtils.makePoint([
+          target.kordinat.longitude,
+          target.kordinat.latitude,
+        ])}
+        aboveLayerID="destinationInnerCircle"
+      />
+    );
+  }
+  //
+  renderLocationInfo() {
+    // if (this.state.timestamp <= 0) {
+    //   return null;
+    // }
+    return (
+      <Bubble>
+        {/* <Text>Timestamp: {this.state.timestamp}</Text> */}
+        <Text>Latitude: {this.state.latitude}</Text>
+        <Text>Longitude: {this.state.longitude}</Text>
+        <Text>Altitude: {this.state.altitude}</Text>
+        {/* <Text>Heading: {this.state.heading}</Text>
+        <Text>Accuracy: {this.state.accuracy}</Text>
+        <Text>Speed: {this.state.speed}</Text> */}
+      </Bubble>
+    );
+  }
+  //TRACKING
+  //INFO
+  getInfoUserTrackingMode() {
+    this._trackingOptions = Object.keys(MapboxGL.UserTrackingModes)
+      .map(key => {
+        return {
+          label: key,
+          data: MapboxGL.UserTrackingModes[key],
+        };
+      })
+      .concat([
+        {
+          label: 'None',
+          data: 'none',
+        },
+      ])
+      .sort(function onSortOptions(a, b) {
+        if (a.label < b.label) {
+          return -1;
+        }
+
+        if (a.label > b.label) {
+          return 1;
+        }
+
+        return 0;
+      });
+    console.log('mapsbox.js => getInfoUserTrackingMode', this._trackingOptions);
+  }
+  //
+  onTrackingChange(index, userTrackingMode) {
+    this.setState({
+      userSelectedUserTrackingMode: userTrackingMode,
+      currentTrackingMode: userTrackingMode,
+    });
+  }
+  //
+  onTrackChange(e) {
+    const {followUserMode} = e.nativeEvent.payload;
+    this.setState({userSelectedUserTrackingMode: followUserMode || 'none'});
+  }
+  onUserLocationUpdate(location) {
+    console.log('mapsbox.js => onUserLocationUpdate', location);
+    this.setState({
+      //   timestamp: location.timestamp,
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+      altitude: location.coords.altitude,
+      // heading: location.coords.heading,
+      // accuracy: location.coords.accuracy,
+      // speed: location.coords.speed,
+    });
+  }
+  //
   render() {
-    const {latitude, longitude} = this.state;
+    const {
+      latitude,
+      longitude,
+      userSelectedUserTrackingMode,
+      zoom,
+      target,
+    } = this.state;
     return (
       <View style={styles.container}>
         {latitude && longitude && (
@@ -211,20 +413,108 @@ class MapsBoxComponent extends PureComponent {
             ref={c => (this.mapbox = c)}
             onRegionDidChange={this.onRegionDidChange}
             showUserLocation={true}
-            userTrackingMode={1}
+            onUserLocationUpdate={this.onUserLocationUpdate}
+            userTrackingMode={MapboxGL.UserTrackingModes.Follow}
             style={{flex: 1}}>
             <MapboxGL.Camera
-              zoomLevel={17}
+              defaultSettings={{
+                zoomLevel: 17,
+                //centerCoordinate: [longitude, latitude],
+              }}
+              zoomLevel={zoom}
               centerCoordinate={[longitude, latitude]}
+              followUserLocation={userSelectedUserTrackingMode !== 'none'}
+              followUserMode={
+                userSelectedUserTrackingMode !== 'none' ? 'course' : 'normal'
+              }
+              onUserTrackingModeChange={this.onTrackChange.bind(this)}
             />
-            {this.renderUserAnnotation()}
+            {this.renderOrigin()}
             {this.renderLine()}
+            {this.renderCurrentPoint()}
+            {this.renderProgressLine()}
+            {this.renderUserAnnotation()}
+            {target && (
+              <MapboxGL.ShapeSource
+                id="destination"
+                shape={MapboxGL.geoUtils.makePoint([
+                  target.kordinat.longitude,
+                  target.kordinat.latitude,
+                ])}>
+                {
+                  //ADD DESTINATION CIRCLE
+                }
+                <MapboxGL.CircleLayer
+                  id="destinationInnerCircle"
+                  style={layerStyles.destination}
+                />
+              </MapboxGL.ShapeSource>
+            )}
           </MapboxGL.MapView>
         )}
+        {this.onRenderNavi()}
       </View>
     );
   }
+  //COMMAND
+  onRenderNavi() {
+    if (this.state.target) {
+      return (
+        <View
+          style={{
+            bottom: '5%',
+            width: convertWidth(100),
+            position: 'absolute',
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+          }}>
+          <Buttons
+            onPressButton={() => this.onStop()}
+            style={{
+              backgroundColor: '#f0f0f0',
+              width: convertWidth(40),
+              height: convertHeight(15),
+            }}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text style={{borderWidth: 0}}>{'Ulang'}</Text>
+            </View>
+          </Buttons>
+          <Buttons
+            onPressButton={() => this.onStart()}
+            style={{
+              backgroundColor: '#f0f0f0',
+              width: convertWidth(40),
+              height: convertHeight(15),
+            }}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text style={{borderWidth: 0}}>{'Mulai'}</Text>
+            </View>
+          </Buttons>
+        </View>
+      );
+    }
+  }
 }
+const layerStyles = {
+  origin: {
+    circleRadius: 5,
+    circleColor: 'white',
+  },
+  destination: {
+    circleRadius: moderateScale(15),
+    circleColor: 'red',
+  },
+  route: {
+    lineColor: 'blue',
+    lineCap: MapboxGL.LineJoin.Round,
+    lineWidth: 3,
+    lineOpacity: 0.84,
+  },
+  progress: {
+    lineColor: '#000',
+    lineWidth: 3,
+  },
+};
 function mapStateToProps(state) {
   return {
     friendlist: state.friendlist,

@@ -8,6 +8,8 @@ class MODAL {
   static friend = {
     id: -1,
     nama: '',
+    alamat: '',
+    avatar: '',
     kordinat: {
       latitude: -6.1904393,
       longitude: 106.7973387,

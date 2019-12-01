@@ -25,6 +25,7 @@ import Buttons from '../../components/Buttons';
 import SearchResulthScreen from './searchresultscreen';
 import {withNavigationFocus} from 'react-navigation';
 const iconSize = moderateScale(40);
+
 let context = null;
 class HomeScreen extends Component {
   constructor(props) {
@@ -37,6 +38,7 @@ class HomeScreen extends Component {
       resultSearch: false,
     };
     context = this;
+    //this.mapboxs = React.createRef();
   }
   componentDidMount() {
     this.props.updateTarget(null);
@@ -44,7 +46,9 @@ class HomeScreen extends Component {
     //this.setState({permissiongrand: true});
     //this.props.navigation.navigate('titlescreen');
     this.focuslistener = this.props.navigation.addListener('didFocus', () => {
-      this.voices.init();
+      if (this.voices) {
+        this.voices.init();
+      }
     });
   }
   componentWillUnmount() {
@@ -102,9 +106,6 @@ class HomeScreen extends Component {
     });
   }
   //Setting
-  onOpenSetting() {
-    callVibrate();
-  }
   //
   onCloseModal() {
     this.setState({showSearch: false});
@@ -135,45 +136,16 @@ class HomeScreen extends Component {
     callVibrate();
     this.props.updateTarget(null);
   }
-  //COMMAND
-  onRenderNavi() {
-    if (this.props.friendtarget) {
-      return (
-        <View
-          style={{
-            bottom: '5%',
-            width: convertWidth(100),
-            position: 'absolute',
-            flexDirection: 'row',
-            justifyContent: 'space-around',
-          }}>
-          <Buttons
-            onPressButton={this.onCancelPress.bind(this)}
-            style={{
-              backgroundColor: '#f0f0f0',
-              width: convertWidth(40),
-              height: convertHeight(15),
-            }}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{borderWidth: 0}}>{'Ulang'}</Text>
-            </View>
-          </Buttons>
-          <Buttons
-            //  onPressButton={this.onStartRecognition.bind(this)}
-            style={{
-              backgroundColor: '#f0f0f0',
-              width: convertWidth(40),
-              height: convertHeight(15),
-            }}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{borderWidth: 0}}>{'Mulai'}</Text>
-            </View>
-          </Buttons>
-        </View>
-      );
-    }
+  onStartPress() {
+    callVibrate();
+    console.log('home/index.js => onStartPress => mapbox', this.refs.mapboxs);
+    // this.mapboxs.onStart();
   }
-
+  onOpenSetting() {
+    callVibrate();
+    onCallTTS('Membuka Pengaturan');
+    this.props.navigation.navigate('settingscreen');
+  }
   //RENDER
   render() {
     const {permissiongrand, showSearch, valuesearch, searchEnable} = this.state;
@@ -183,8 +155,9 @@ class HomeScreen extends Component {
          */}
         {permissiongrand == true && (
           <MapsBoxComponent
-            //ref={c => (this.mapbox = c)}
+            ref={this.mapboxs}
             target={this.props.friendtarget}
+            onCancel={this.onCancelPress.bind(this)}
           />
         )}
         {searchEnable && this.props.friendtarget == null && (
@@ -196,7 +169,7 @@ class HomeScreen extends Component {
             style={{position: 'absolute'}}
           />
         )}
-        {this.onRenderNavi()}
+
         <View style={{position: 'absolute', top: '3%', left: '5%'}}>
           <TouchableOpacity onPress={() => this.onOpenSetting()}>
             <Iconsetting height={iconSize} width={iconSize} />
@@ -205,6 +178,7 @@ class HomeScreen extends Component {
       </SafeAreaView>
     );
   }
+
   //modal search
   modalSearch() {}
 }

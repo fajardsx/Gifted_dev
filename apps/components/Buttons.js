@@ -39,9 +39,11 @@ export default class Buttons extends PureComponent {
     return null;
   }
   callonpress() {
-    console.log('callonpress');
+    //console.log('callonpress');
     if (this.props.onPressButton) {
       this.props.onPressButton();
+    } else {
+      console.log('no onPressButton function');
     }
   }
   render() {

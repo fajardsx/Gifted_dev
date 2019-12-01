@@ -24,7 +24,7 @@ import Forminput from '../../components/Forminput';
 import VoicesComponent from '../../components/Voices';
 import Constants from '../../configs/constant';
 const iconSize = moderateScale(40);
-class SearchResulthScreen extends PureComponent {
+class CariKontakScreen extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -84,6 +84,11 @@ class SearchResulthScreen extends PureComponent {
   processSearch() {
     const {searchtxt, data} = this.state;
     console.log('data', this.props.friendlist);
+    if (searchtxt.length < 1) {
+      return this.setState({
+        datalist: [],
+      });
+    }
     let listname = '';
     let resultSearch = this.props.friendlist.filter(res => {
       let resData = '';
@@ -130,6 +135,21 @@ class SearchResulthScreen extends PureComponent {
     //const {permissiongrand} = this.state;
     return (
       <SafeAreaView style={styles.container}>
+        <View
+          style={{
+            justifyContent: 'center',
+            borderBottomWidth: 1,
+            width: convertWidth(100),
+            height: moderateScale(60),
+          }}>
+          <Text
+            style={{
+              marginLeft: moderateScale(20),
+              fontSize: moderateScale(21),
+            }}>
+            {'Cari Kontak'}
+          </Text>
+        </View>
         <View style={{flex: 1, backgroundColor: '#fff', alignItems: 'center'}}>
           <View style={{paddingVertical: 10}} />
           <View
@@ -180,7 +200,7 @@ class SearchResulthScreen extends PureComponent {
               <Text
                 style={{
                   fontSize: moderateScale(15),
-                }}>{`Lokasi ${this.state.searchtxt} tidak ditemukan`}</Text>
+                }}>{`Kontak ${this.state.searchtxt} tidak ditemukan`}</Text>
             </View>
           )}
 
@@ -229,4 +249,4 @@ function dispatchToProps(dispatch) {
       }),
   };
 }
-export default connect(mapStateToProps, dispatchToProps)(SearchResulthScreen);
+export default connect(mapStateToProps, dispatchToProps)(CariKontakScreen);
