@@ -62,6 +62,8 @@ export function findCommad(id) {
   switch (id.toLowerCase()) {
     case 'cari':
       return Constants.COMMAND_CARI;
+    case 'lokasi':
+      return Constants.COMMAND_CARI;
     case 'tambah':
       return Constants.COMMAND_TAMBAH;
     default:

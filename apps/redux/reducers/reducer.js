@@ -13,8 +13,8 @@ const initState = {
         'https://images.pexels.com/photos/414612/pexels-photo-414612.jpeg',
       alamat: '',
       kordinat: {
-        latitude: -6.1904393,
-        longitude: 106.7973387,
+        latitude: -6.3125831,
+        longitude: 106.859799,
         longitudeDelta: 0.005,
         latitudeDelta: 0.005,
       },

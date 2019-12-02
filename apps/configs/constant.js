@@ -26,20 +26,22 @@ class Constants {
   static SERVER_ID = 1; //DEBUG USE 0
   static HEADER_GET = {
     Accept: 'application/json',
-    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+    'Content-Type': 'multipart/form-data',
     'Cache-Control': 'no-cache',
   };
   static HEADER_POST = {
     Accept: 'application/javascript',
     'Content-Type': 'multipart/form-data',
   };
+  //REST URL
+  static REST = 'https://preview.digify.us/gifted/api/';
   //REST TIMEOUT
   static TIME_OUT = 10000;
   //COMMAD
   static COMMAND_CARI = 1;
   static COMMAND_TAMBAH = 2;
   //DEBUG
-  static DEV_MODE = true;
+  static DEV_MODE = false;
 }
 
 export default Constants;

@@ -126,9 +126,9 @@ class CariKontakScreen extends PureComponent {
   //
   onSelectFriend(item) {
     console.log('processSearch() => onSelectFriend', item);
-    this.props.updateTarget(item);
-    this.props.navigation.state.params.functOnProcess();
-    this.props.navigation.goBack();
+    //this.props.updateTarget(item);
+    //this.props.navigation.state.params.functOnProcess();
+    //this.props.navigation.goBack();
   }
   //RENDER
   render() {
@@ -206,6 +206,7 @@ class CariKontakScreen extends PureComponent {
 
           <VoicesComponent
             onCallback={this.onCallbackResult.bind(this)}
+            label={'Cari\nTeman'}
             style={{
               position: 'absolute',
               bottom: moderateScale(30),

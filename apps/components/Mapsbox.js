@@ -24,6 +24,8 @@ import {
 } from '../configs/utils';
 import {moderateScale} from '../styles/scaling';
 import Bubble from './Bubble';
+import Iconmove from '../assets/images/vector/walk.svg';
+import Iconrefresh from '../assets/images/vector/refresh.svg';
 
 MapboxGL.setAccessToken(Constants.MAPBOX_KEYS);
 
@@ -474,9 +476,17 @@ class MapsBoxComponent extends Component {
               backgroundColor: '#f0f0f0',
               width: convertWidth(40),
               height: convertHeight(15),
+              borderWidth: 1,
+              borderRadius: 10,
             }}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{borderWidth: 0}}>{'Ulang'}</Text>
+              <Iconrefresh
+                height={moderateScale(30)}
+                width={moderateScale(30)}
+              />
+              <Text style={{borderWidth: 0, fontSize: moderateScale(18)}}>
+                {'Ulang'}
+              </Text>
             </View>
           </Buttons>
           <Buttons
@@ -485,9 +495,14 @@ class MapsBoxComponent extends Component {
               backgroundColor: '#f0f0f0',
               width: convertWidth(40),
               height: convertHeight(15),
+              borderWidth: 1,
+              borderRadius: 10,
             }}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{borderWidth: 0}}>{'Mulai'}</Text>
+              <Iconmove height={moderateScale(30)} width={moderateScale(30)} />
+              <Text style={{borderWidth: 0, fontSize: moderateScale(18)}}>
+                {'Mulai'}
+              </Text>
             </View>
           </Buttons>
         </View>

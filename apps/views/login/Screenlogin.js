@@ -6,6 +6,8 @@ import {moderateScale} from '../../styles/scaling';
 import {convertWidth} from '../../configs/utils';
 import Forminput from '../../components/Forminput';
 import {callVibrate} from './../../configs/utils';
+import {postLogin, callPost} from '../../services';
+import API from '../../services/common/api';
 
 class Screenlogin extends Component {
   constructor(props) {
@@ -25,8 +27,23 @@ class Screenlogin extends Component {
     // console.log('screenlogin', this.state.emailtxt);
     // console.log('screenlogin', this.state.passwordtxt);
     callVibrate();
-    this.props.navigation.navigate('inappscreen');
+    //this.props.navigation.navigate('inappscreen');
+
+    let bodyFormData = new FormData();
+    bodyFormData.append('email', this.state.emailtxt);
+    bodyFormData.append('password', this.state.passwordtxt);
+    callPost(API.LOGIN, bodyFormData, this.callbacklogin.bind(this));
   }
+  callbacklogin(res) {
+    this.props.navigation.navigate('inappscreen');
+    console.log(res);
+    if (res) {
+      if (res.error) {
+        //callTo
+      }
+    }
+  }
+  //
   render() {
     return (
       <View style={styles.container}>

@@ -153,7 +153,9 @@ export default class VoicesComponent extends PureComponent {
             }}
             onPressButton={this.onStartRecognition.bind(this)}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{borderWidth: 0}}>{'Cari\nLokasi'}</Text>
+              <Text style={{borderWidth: 0}}>
+                {this.props.label ? this.props.label : 'Cari\nLokasi'}
+              </Text>
               <IconMic height={iconsize} width={iconsize} />
             </View>
           </Buttons>
