@@ -121,9 +121,12 @@ class SearchResulthScreen extends PureComponent {
   //
   onSelectFriend(item) {
     console.log('processSearch() => onSelectFriend', item);
-    this.props.updateTarget(item);
-    this.props.navigation.state.params.functOnProcess();
-    this.props.navigation.goBack();
+
+    let dedlay = setTimeout(() => {
+      this.props.updateTarget(item);
+      this.props.navigation.state.params.functOnProcess();
+      this.props.navigation.goBack();
+    }, 1000);
   }
   //RENDER
   render() {

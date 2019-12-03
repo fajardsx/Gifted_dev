@@ -6,6 +6,7 @@ import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Polyline from '@mapbox/polyline';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 import {lineString as makeLineString} from '@turf/helpers';
+import findDistance from '@turf/distance';
 //REDUX
 import {connect} from 'react-redux';
 import ACTION_TYPE from '../redux/actions/actions';
@@ -46,6 +47,11 @@ class MapsBoxComponent extends Component {
       longitude: 106.7950098,
       latitudeDelta: 0.0922,
       longitudeDelta: 0.0421,
+      timestamp: null,
+      altitude: null,
+      heading: null,
+      accuracy: null,
+      speed: null,
       direction: null,
       routeSimulator: null,
       currentpoint: null,
@@ -53,6 +59,7 @@ class MapsBoxComponent extends Component {
       navi: null,
       userSelectedUserTrackingMode: 'none',
       target: null,
+      naviMode: false,
       zoom: 17,
     };
     context = this;
@@ -61,24 +68,10 @@ class MapsBoxComponent extends Component {
   }
   componentDidMount() {
     this.onReqUserLocation();
-    this.getInfoUserTrackingMode();
+    //this.getInfoUserTrackingMode();
     MapboxGL.setTelemetryEnabled(false);
   }
-  onStart() {
-    console.log('mapsbox.js => onStart');
-    callVibrate();
-    onCallTTS('Memulai Navigasi');
-    const routeSimulator = new RouteSimulator(this.state.direction);
-    routeSimulator.addListener(currentpoint => this.setState({currentpoint}));
-    routeSimulator.start();
-    this.setState({routeSimulator});
-  }
-  onStop() {
-    if (this.state.routeSimulator) {
-      this.state.routeSimulator.stop();
-    }
-    this.props.onCancel();
-  }
+  //RECEIVED UPDATE PROPS
   static getDerivedStateFromProps(props, state) {
     if (props.target !== state.target) {
       context.onGetDirection(props.target);
@@ -89,6 +82,40 @@ class MapsBoxComponent extends Component {
     }
     return null;
   }
+  //START NAVIGATE
+  onStart() {
+    console.log('mapsbox.js => onStart');
+    callVibrate();
+    onCallTTS('Memulai Navigasi');
+    const routeSimulator = new RouteSimulator(this.state.direction);
+    routeSimulator.addListener(currentpoint => this.setState({currentpoint}));
+    routeSimulator.start();
+    this.setState(
+      {
+        routeSimulator,
+      },
+      () => {
+        this.onTrackingChange(MapboxGL.UserTrackingModes.FollowWithHeading);
+      },
+    );
+  }
+  onStop() {
+    if (this.state.routeSimulator) {
+      this.state.routeSimulator.stop();
+      this.setState({naviMode: false, currentpoint: null}, () => {
+        context.onTrackingChange('none');
+      });
+
+      this.props.onCancel();
+    } else {
+      this.setState({naviMode: false, currentpoint: null}, () => {
+        context.onTrackingChange('none');
+      });
+
+      this.props.onCancel();
+    }
+  }
+  //USER LOCATION
   onReqUserLocation() {
     try {
       let author = Geolocation.requestAuthorization();
@@ -133,12 +160,11 @@ class MapsBoxComponent extends Component {
 
       let concatLot = [longitude, latitude];
       let locTarget = [target.kordinat.longitude, target.kordinat.latitude];
-      console.log('onGetDirection', concatLot);
 
       this.getDirectionsNavigation(concatLot, locTarget);
     }
   }
-  //
+  //GET ROUTE
   async getDirectionsNavigation(startlocate, destinationlocate) {
     console.log('getDirections');
     console.log('from', startlocate);
@@ -146,6 +172,10 @@ class MapsBoxComponent extends Component {
     console.log(
       'MapboxGL.geoUtils.makePoint ',
       MapboxGL.geoUtils.makePoint(destinationlocate),
+    );
+    console.log(
+      'getDirectionsNavigation()=> findDistance ',
+      findDistance(startlocate, destinationlocate, {units: 'miles'}),
     );
 
     const reqOptons = {
@@ -156,12 +186,25 @@ class MapsBoxComponent extends Component {
 
     try {
       const res = await directionClient.getDirections(reqOptons).send();
-      this.setState({
-        direction: makeLineString(res.body.routes[0].geometry.coordinates),
-        navi: res,
-        destinationPoint: destinationlocate,
-      });
-      console.log('mapbox.js => getDirectionsNavigation', res);
+      this.setState(
+        {
+          direction: makeLineString(res.body.routes[0].geometry.coordinates),
+          navi: res,
+          destinationPoint: destinationlocate,
+        },
+        () => {
+          console.log(
+            'getDirectionsNavigation()=> direction ',
+            this.state.direction,
+          );
+          console.log(
+            'getDirectionsNavigation()=> findDistance ',
+            findDistance(startlocate, destinationlocate, {units: 'miles'}),
+          );
+        },
+      );
+
+      console.log('mapbox.js => getDirectionsNavigation res', res);
       return true;
     } catch (error) {
       console.log('mapsbox.js => getDirectionsNavigation', error);
@@ -194,32 +237,94 @@ class MapsBoxComponent extends Component {
     const zoom = await this.mapbox.getZoom();
     this.setState({zoom});
   }
-  renderAnnotations() {
-    const {direction} = this.state;
-    const items = [];
-    console.log('renderAnnotations', direction);
-    if (direction == null) {
-      return null;
-    }
-    for (let i = 0; i < direction.length; i++) {
-      items.push(this.renderRouteAnnotation(direction[i]));
-    }
-    return items;
-  }
-  renderRouteAnnotation(item) {
-    console.log('renderRouteAnnotation', item);
+  //=========================================RENDER=======================================
+  render() {
+    const {
+      latitude,
+      longitude,
+      userSelectedUserTrackingMode,
+      zoom,
+      target,
+    } = this.state;
     return (
-      <MapboxGL.PointAnnotation
-        key="pointAnnotation"
-        id="pointAnnotation"
-        coordinate={[item.longitude, item.latitude]}>
-        <View style={styles.annotationContainer}>
-          <View style={styles.annotationFill} />
-        </View>
-        <MapboxGL.Callout title="An annotation here!" />
-      </MapboxGL.PointAnnotation>
+      <View style={styles.container}>
+        {latitude && longitude && (
+          <MapboxGL.MapView
+            ref={c => (this.mapbox = c)}
+            onRegionDidChange={this.onRegionDidChange}
+            showUserLocation={true}
+            onUserLocationUpdate={this.onUserLocationUpdate}
+            userTrackingMode={MapboxGL.UserTrackingModes.Follow}
+            style={{flex: 1}}>
+            <MapboxGL.Camera
+              defaultSettings={{
+                zoomLevel: 17,
+                //centerCoordinate: [longitude, latitude],
+              }}
+              zoomLevel={zoom}
+              centerCoordinate={[longitude, latitude]}
+              followUserLocation={userSelectedUserTrackingMode != 'none'}
+              followUserMode={
+                userSelectedUserTrackingMode != 'none'
+                  ? userSelectedUserTrackingMode
+                  : 'normal'
+              }
+              onUserTrackingModeChange={this.onTrackChange.bind(this)}
+            />
+            {this.renderOrigin()}
+            {this.renderLine()}
+            {this.renderCurrentPoint()}
+            {this.renderProgressLine()}
+            {this.renderUserAnnotation()}
+            {target && (
+              <MapboxGL.ShapeSource
+                id="destination"
+                shape={MapboxGL.geoUtils.makePoint([
+                  target.kordinat.longitude,
+                  target.kordinat.latitude,
+                ])}>
+                {
+                  //ADD DESTINATION CIRCLE
+                }
+                <MapboxGL.CircleLayer
+                  id="destinationInnerCircle"
+                  style={layerStyles.destination}
+                />
+              </MapboxGL.ShapeSource>
+            )}
+          </MapboxGL.MapView>
+        )}
+        {this.onRenderNavi()}
+      </View>
     );
   }
+  // renderAnnotations() {
+  //   const {direction} = this.state;
+  //   const items = [];
+  //   console.log('renderAnnotations', direction);
+  //   if (direction == null) {
+  //     return null;
+  //   }
+  //   for (let i = 0; i < direction.length; i++) {
+  //     items.push(this.renderRouteAnnotation(direction[i]));
+  //   }
+  //   return items;
+  // }
+  // renderRouteAnnotation(item) {
+  //   console.log('renderRouteAnnotation', item);
+  //   return (
+  //     <MapboxGL.PointAnnotation
+  //       key="pointAnnotation"
+  //       id="pointAnnotation"
+  //       coordinate={[item.longitude, item.latitude]}>
+  //       <View style={styles.annotationContainer}>
+  //         <View style={styles.annotationFill} />
+  //       </View>
+  //       <MapboxGL.Callout title="An annotation here!" />
+  //     </MapboxGL.PointAnnotation>
+  //   );
+  // }
+  //RENDER USER START LOCATION
   renderUserAnnotation() {
     const {latitude, longitude} = this.state;
     return (
@@ -234,7 +339,7 @@ class MapsBoxComponent extends Component {
       </MapboxGL.PointAnnotation>
     );
   }
-  //
+  //RENDER LINE ROUTE
   renderLine() {
     const {direction} = this.state;
 
@@ -252,7 +357,7 @@ class MapsBoxComponent extends Component {
       </MapboxGL.ShapeSource>
     );
   }
-  //
+  //RENDER USER ROUTE POINT
   renderCurrentPoint() {
     const {currentpoint} = this.state;
 
@@ -267,6 +372,7 @@ class MapsBoxComponent extends Component {
       />
     );
   }
+  //RENDER USER ROUTE PROGGRESS
   renderProgressLine() {
     const {currentpoint, direction} = this.state;
 
@@ -294,7 +400,7 @@ class MapsBoxComponent extends Component {
       </MapboxGL.Animated.ShapeSource>
     );
   }
-  //
+  //RENDER USER ROUTE TARGET LINE
   renderOrigin() {
     const {currentpoint, direction, destinationPoint} = this.state;
     let backgroundColor = 'white';
@@ -313,7 +419,7 @@ class MapsBoxComponent extends Component {
       </MapboxGL.ShapeSource>
     );
   }
-  //
+  //RENDER USER TARGET DESTINATION  POINT
   renderTargetPoint() {
     const {target} = this.state;
     if (target == null) {
@@ -376,7 +482,7 @@ class MapsBoxComponent extends Component {
     console.log('mapsbox.js => getInfoUserTrackingMode', this._trackingOptions);
   }
   //
-  onTrackingChange(index, userTrackingMode) {
+  onTrackingChange(userTrackingMode) {
     this.setState({
       userSelectedUserTrackingMode: userTrackingMode,
       currentTrackingMode: userTrackingMode,
@@ -390,74 +496,16 @@ class MapsBoxComponent extends Component {
   onUserLocationUpdate(location) {
     console.log('mapsbox.js => onUserLocationUpdate', location);
     this.setState({
-      //   timestamp: location.timestamp,
+      timestamp: location.timestamp,
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
       altitude: location.coords.altitude,
-      // heading: location.coords.heading,
-      // accuracy: location.coords.accuracy,
-      // speed: location.coords.speed,
+      heading: location.coords.heading,
+      accuracy: location.coords.accuracy,
+      speed: location.coords.speed,
     });
   }
-  //
-  render() {
-    const {
-      latitude,
-      longitude,
-      userSelectedUserTrackingMode,
-      zoom,
-      target,
-    } = this.state;
-    return (
-      <View style={styles.container}>
-        {latitude && longitude && (
-          <MapboxGL.MapView
-            ref={c => (this.mapbox = c)}
-            onRegionDidChange={this.onRegionDidChange}
-            showUserLocation={true}
-            onUserLocationUpdate={this.onUserLocationUpdate}
-            userTrackingMode={MapboxGL.UserTrackingModes.Follow}
-            style={{flex: 1}}>
-            <MapboxGL.Camera
-              defaultSettings={{
-                zoomLevel: 17,
-                //centerCoordinate: [longitude, latitude],
-              }}
-              zoomLevel={zoom}
-              centerCoordinate={[longitude, latitude]}
-              followUserLocation={userSelectedUserTrackingMode !== 'none'}
-              followUserMode={
-                userSelectedUserTrackingMode !== 'none' ? 'course' : 'normal'
-              }
-              onUserTrackingModeChange={this.onTrackChange.bind(this)}
-            />
-            {this.renderOrigin()}
-            {this.renderLine()}
-            {this.renderCurrentPoint()}
-            {this.renderProgressLine()}
-            {this.renderUserAnnotation()}
-            {target && (
-              <MapboxGL.ShapeSource
-                id="destination"
-                shape={MapboxGL.geoUtils.makePoint([
-                  target.kordinat.longitude,
-                  target.kordinat.latitude,
-                ])}>
-                {
-                  //ADD DESTINATION CIRCLE
-                }
-                <MapboxGL.CircleLayer
-                  id="destinationInnerCircle"
-                  style={layerStyles.destination}
-                />
-              </MapboxGL.ShapeSource>
-            )}
-          </MapboxGL.MapView>
-        )}
-        {this.onRenderNavi()}
-      </View>
-    );
-  }
+
   //COMMAND
   onRenderNavi() {
     if (this.state.target) {

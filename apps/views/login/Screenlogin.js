@@ -8,6 +8,7 @@ import Forminput from '../../components/Forminput';
 import {callVibrate} from './../../configs/utils';
 import {postLogin, callPost} from '../../services';
 import API from '../../services/common/api';
+import Constants from '../../configs/constant';
 
 class Screenlogin extends Component {
   constructor(props) {
@@ -27,7 +28,9 @@ class Screenlogin extends Component {
     // console.log('screenlogin', this.state.emailtxt);
     // console.log('screenlogin', this.state.passwordtxt);
     callVibrate();
-    //this.props.navigation.navigate('inappscreen');
+    if (Constants.DEV_MODE) {
+      return this.props.navigation.navigate('inappscreen');
+    }
 
     let bodyFormData = new FormData();
     bodyFormData.append('email', this.state.emailtxt);

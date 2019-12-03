@@ -45,7 +45,7 @@ class Polyline {
 }
 
 class RouteSimulator {
-  constructor(lineString, speed = 0.04) {
+  constructor(lineString, speed = 0.01) {
     this._polyline = new Polyline(lineString);
     this._previousDistance = 0;
     this._currentDistance = 0;
@@ -80,6 +80,10 @@ class RouteSimulator {
       // interpolate between previous to current distance
       const listener = step => {
         const currentPosition = this._polyline.coordinateFromStart(step.value);
+        console.log(
+          'RouteSimulator.js => tick() currentPosition ',
+          currentPosition,
+        );
         this.emit(currentPosition);
       };
 
@@ -96,7 +100,7 @@ class RouteSimulator {
         this._animatedValue.removeListener(listener);
 
         if (this._currentDistance > this._polyline.totalDistance) {
-          this.reset();
+          this.stop();
           return;
         }
 

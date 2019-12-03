@@ -1,14 +1,24 @@
 import React, {PureComponent} from 'react';
-import {Text, View, Alert} from 'react-native';
+import {Text, View, Alert, StyleSheet} from 'react-native';
 //Third
 import Geolocation from 'react-native-geolocation-service';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Polyline from '@mapbox/polyline';
+import {lineString as makeLineString} from '@turf/helpers';
+import findDistance from '@turf/distance';
+import PulseCircleLayer from './PulseCircleLayer';
+import {directionClient} from './MapClient';
+import RouteSimulator from './RouterSimulator';
+//REDUX
+import {connect} from 'react-redux';
+import ACTION_TYPE from '../redux/actions/actions';
 //local
 import Constants from '../configs/constant';
 import Buttons from '../components/Buttons';
 import {styles} from '../styles';
-export default class MapsComponent extends PureComponent {
+
+let context = null;
+class MapsComponent extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -18,10 +28,32 @@ export default class MapsComponent extends PureComponent {
       latitudeDelta: 1,
       longitudeDelta: 1,
       direction: null,
+      region: null,
+      direction: null,
+      routeSimulator: null,
+      currentpoint: null,
+      destinationPoint: null,
+      navi: null,
+      userSelectedUserTrackingMode: 'none',
+      target: null,
+      naviMode: false,
+      zoom: 17,
     };
+    context = this;
   }
   componentDidMount() {
     this.onReqUserLocation();
+  }
+  //RECEIVED UPDATE PROPS
+  static getDerivedStateFromProps(props, state) {
+    if (props.target !== state.target) {
+      context.onGetDirection(props.target);
+      return {
+        target: props.target,
+        direction: null,
+      };
+    }
+    return null;
   }
   onReqUserLocation() {
     try {
@@ -39,11 +71,17 @@ export default class MapsComponent extends PureComponent {
             {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              longitudeDelta: 0.005,
-              latitudeDelta: 0.005,
+              longitudeDelta: 0.001,
+              latitudeDelta: 0.001,
+              region: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                longitudeDelta: 0.001,
+                latitudeDelta: 0.001,
+              },
             },
             () => {
-              this.onGetDirection();
+              //this.onGetDirection();
             },
           ),
         error => {
@@ -62,18 +100,52 @@ export default class MapsComponent extends PureComponent {
   }
   //
   onGetDirection() {
-    const {latitude, longitude} = this.state;
+    const {region, target} = this.state;
+    if (target) {
+      let concatLot = region.latitude + ',' + region.longitude;
+      let locTarget = [target.kordinat.longitude, target.kordinat.latitude];
+      console.log('onGetDirection', concatLot);
+      this.getDirectionsNavigation(concatLot, locTarget);
+    }
+  }
+  //GET ROUTE
+  async getDirectionsNavigation(startlocate, destinationlocate) {
+    console.log('getDirections');
+    console.log('from', startlocate);
+    console.log('to', destinationlocate);
 
-    let concatLot = latitude + ',' + longitude;
-    console.log('onGetDirection', concatLot);
-    this.setState(
-      {
-        concat: concatLot,
-      },
-      () => {
-        //this.getDirections(this.state.concatLot, '-6.2207017,106.7813473');
-      },
-    );
+    const reqOptons = {
+      waypoints: [{coordinates: startlocate}, {coordinates: destinationlocate}],
+      profile: 'walking',
+      geometries: 'geojson',
+    };
+
+    try {
+      const res = await directionClient.getDirections(reqOptons).send();
+      this.setState(
+        {
+          direction: makeLineString(res.body.routes[0].geometry.coordinates),
+          navi: res,
+          destinationPoint: destinationlocate,
+        },
+        () => {
+          console.log(
+            'getDirectionsNavigation()=> direction ',
+            this.state.direction,
+          );
+          console.log(
+            'getDirectionsNavigation()=> findDistance ',
+            findDistance(startlocate, destinationlocate, {units: 'miles'}),
+          );
+        },
+      );
+
+      console.log('mapbox.js => getDirectionsNavigation res', res);
+      return true;
+    } catch (error) {
+      console.log('mapsbox.js => getDirectionsNavigation', error);
+      return error;
+    }
   }
   async getDirections(startlocate, destinationlocate) {
     console.log('getDirections');
@@ -101,16 +173,21 @@ export default class MapsComponent extends PureComponent {
     }
   }
   //
+  onregionchange(region) {
+    this.setState({region});
+  }
+  //
   render() {
     const {latitude, longitude} = this.state;
     return (
       <View style={styles.container}>
         {latitude && longitude && (
           <MapView
-            style={{flex: 1}}
+            style={[StyleSheet.absoluteFillObject, {position: 'absolute'}]}
             provider={PROVIDER_GOOGLE}
             showsUserLocation
-            initialRegion={this.state}
+            initialRegion={this.state.region}
+            //onRegionChange={this.onregionchange.bind(this)}
             region={{
               latitude: latitude ? latitude : -6.2188339,
               longitude: longitude ? longitude : 106.7950098,
@@ -118,10 +195,7 @@ export default class MapsComponent extends PureComponent {
               longitudeDelta: this.state.longitudeDelta,
             }}>
             <Marker
-              coordinate={{
-                latitude: latitude ? latitude : -6.2188339,
-                longitude: longitude ? longitude : 106.7950098,
-              }}
+              coordinate={this.state.region}
               title={'Your Location'}
               description={`${latitude}.${longitude}`}
             />
@@ -131,3 +205,19 @@ export default class MapsComponent extends PureComponent {
     );
   }
 }
+function mapStateToProps(state) {
+  return {
+    friendlist: state.friendlist,
+    users: state.user,
+  };
+}
+function dispatchToProps(dispatch) {
+  return {
+    updateuser: user =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_USER,
+        value: user,
+      }),
+  };
+}
+export default connect(mapStateToProps, dispatchToProps)(MapsComponent);

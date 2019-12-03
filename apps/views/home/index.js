@@ -36,6 +36,7 @@ class HomeScreen extends Component {
       valuesearch: '',
       searchEnable: true,
       resultSearch: false,
+      isnavi: false,
     };
     context = this;
     //this.mapboxs = React.createRef();
@@ -111,12 +112,12 @@ class HomeScreen extends Component {
     this.setState({showSearch: false});
   }
   onProcessDirection() {
-    console.log(
-      'home/index.js => onProcessDirection ',
-      this.props.friendtarget,
-    );
     let name = this.props.friendtarget ? this.props.friendtarget.nama : 'teman';
     onCallTTS('Mencari Lokasi ' + name);
+    console.log(
+      'home/index.js => onProcessDirection => friendtarget',
+      this.props.friendtarget,
+    );
     if (this.props.friendtarget) {
       let locTarget =
         this.props.friendtarget.kordinat.longitude +
@@ -124,16 +125,15 @@ class HomeScreen extends Component {
         this.props.friendtarget.kordinat.latitude;
 
       if (this.mapbox) {
-        console.log(
-          'home/index.js => onProcessDirection => locTarget',
-          thismapbox,
-        );
-        this.mapbox.onGetDirection(locTarget);
+        //this.mapbox.onGetDirection(locTarget);
       }
+    } else {
+      //return this.onProcessDirection();
     }
   }
   onCancelPress() {
     callVibrate();
+    this.setState({isnavi: false});
     this.props.updateTarget(null);
   }
   onStartPress() {
@@ -146,18 +146,27 @@ class HomeScreen extends Component {
     onCallTTS('Membuka Pengaturan');
     this.props.navigation.navigate('settingscreen');
   }
-  //RENDER
+  //=============================RENDER==========================================
   render() {
-    const {permissiongrand, showSearch, valuesearch, searchEnable} = this.state;
+    const {permissiongrand, searchEnable, isnavi} = this.state;
     return (
       <SafeAreaView style={styles.container}>
         {/* {permissiongrand == true && <MapsBoxComponent />}
          */}
-        {permissiongrand == true && (
+        {/* {permissiongrand == true && (
           <MapsBoxComponent
             ref={this.mapboxs}
             target={this.props.friendtarget}
             onCancel={this.onCancelPress.bind(this)}
+            isnavi={isnavi}
+          />
+        )} */}
+        {permissiongrand == true && (
+          <MapsComponent
+            ref={this.mapboxs}
+            target={this.props.friendtarget}
+            onCancel={this.onCancelPress.bind(this)}
+            isnavi={isnavi}
           />
         )}
         {searchEnable && this.props.friendtarget == null && (
