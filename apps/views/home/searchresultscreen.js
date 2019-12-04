@@ -45,14 +45,14 @@ class SearchResulthScreen extends PureComponent {
   componentWillUnmount() {
     console.log('SearchResulthScreen.js => Destroy ');
   }
-  //   static getDerivedStateFromProps(props, state) {
-  //     if (props.valueSearch !== state.searchtxt) {
-  //       return {
-  //         searchtxt: props.valueSearch,
-  //       };
-  //     }
-  //     return state;
+  // static getDerivedStateFromProps(props, state) {
+  //   if (props.valueSearch !== state.searchtxt) {
+  //     return {
+  //       searchtxt: props.valueSearch,
+  //     };
   //   }
+  //   return state;
+  // }
   //Callback
   onCallbackResult(data) {
     let dataSplit = data.split(' ');
@@ -89,7 +89,7 @@ class SearchResulthScreen extends PureComponent {
       let resData = '';
 
       // let keyCity = res.city_name ? res.city_name.toUpperCase() : '';
-      let keyName = res.nama ? res.nama.toUpperCase() : '';
+      let keyName = res ? res.nama.toUpperCase() : '';
       console.log('processSearch() => res', res);
       console.log('processSearch() => searchtxt', searchtxt);
       resData = `${keyName} `;

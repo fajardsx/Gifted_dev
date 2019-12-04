@@ -2,8 +2,7 @@ import React, {PureComponent} from 'react';
 import {Text, View, Alert, StyleSheet} from 'react-native';
 //Third
 import Geolocation from 'react-native-geolocation-service';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
-import Polyline from '@mapbox/polyline';
+import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
 import {lineString as makeLineString} from '@turf/helpers';
 import findDistance from '@turf/distance';
 import PulseCircleLayer from './PulseCircleLayer';
@@ -15,7 +14,8 @@ import ACTION_TYPE from '../redux/actions/actions';
 //local
 import Constants from '../configs/constant';
 import Buttons from '../components/Buttons';
-import {styles} from '../styles';
+import {styles, colors} from '../styles';
+import {convertToArrayOfObjects} from '../configs/utils';
 
 let context = null;
 class MapsComponent extends PureComponent {
@@ -48,6 +48,7 @@ class MapsComponent extends PureComponent {
   static getDerivedStateFromProps(props, state) {
     if (props.target !== state.target) {
       context.onGetDirection(props.target);
+      console.log('Map.js => target', props.target);
       return {
         target: props.target,
         direction: null,
@@ -99,10 +100,10 @@ class MapsComponent extends PureComponent {
     }
   }
   //
-  onGetDirection() {
-    const {region, target} = this.state;
+  onGetDirection(target) {
+    const {region} = this.state;
     if (target) {
-      let concatLot = region.latitude + ',' + region.longitude;
+      let concatLot = [region.longitude, region.latitude];
       let locTarget = [target.kordinat.longitude, target.kordinat.latitude];
       console.log('onGetDirection', concatLot);
       this.getDirectionsNavigation(concatLot, locTarget);
@@ -124,7 +125,9 @@ class MapsComponent extends PureComponent {
       const res = await directionClient.getDirections(reqOptons).send();
       this.setState(
         {
-          direction: makeLineString(res.body.routes[0].geometry.coordinates),
+          direction: convertToArrayOfObjects(
+            res.body.routes[0].geometry.coordinates,
+          ),
           navi: res,
           destinationPoint: destinationlocate,
         },
@@ -177,6 +180,22 @@ class MapsComponent extends PureComponent {
     this.setState({region});
   }
   //
+  renderLineRoute() {
+    const {direction} = this.state;
+
+    if (direction == null) {
+      return null;
+    }
+    console.log('renderLine', direction);
+    return (
+      <Polyline
+        coordinates={direction}
+        strokeColor={colors.lines.COLOR_LINE_STEP}
+        strokeWidth={6}
+      />
+    );
+  }
+  //
   render() {
     const {latitude, longitude} = this.state;
     return (
@@ -194,6 +213,7 @@ class MapsComponent extends PureComponent {
               latitudeDelta: this.state.latitudeDelta,
               longitudeDelta: this.state.longitudeDelta,
             }}>
+            {this.renderLineRoute()}
             <Marker
               coordinate={this.state.region}
               title={'Your Location'}

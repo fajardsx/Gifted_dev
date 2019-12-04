@@ -75,4 +75,30 @@ export function findCommad(id) {
 export function onCallTTS(value) {
   return Tts.speak(value);
 }
+//ARRAY TO ARRAY OF OBJECT
+export function convertToArrayOfObjects(data) {
+  Array.prototype.insert = function(index, item) {
+    this.splice(index, 0, item);
+  };
+
+  data.insert(0, ['longitude', 'latitude']);
+
+  var keys = data.shift(),
+    i = 0,
+    k = 0,
+    obj = null,
+    output = [];
+
+  for (i = 0; i < data.length; i++) {
+    obj = {};
+
+    for (k = 0; k < keys.length; k++) {
+      obj[keys[k]] = data[i][k];
+    }
+
+    output.push(obj);
+  }
+
+  return output;
+}
 //--------------------------------------------------------------------------------------------
