@@ -3,6 +3,7 @@ import MODAL from '../modals/index';
 //init
 const initState = {
   isFirst: true,
+  token: null,
   user: null,
   currentFriendTarget: null,
   friendlist: [
@@ -44,6 +45,8 @@ const reducer = (state = initState, action) => {
       return {...state, user: action.value};
     case ACTIONTYPE.UPDATE_TARGET:
       return {...state, currentFriendTarget: action.value};
+    case ACTIONTYPE.UPDATE_TOKEN:
+      return {...state, token: action.value};
   }
   return state;
 };

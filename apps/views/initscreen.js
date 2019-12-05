@@ -1,12 +1,15 @@
 import React, {PureComponent} from 'react';
 import {View, Text} from 'react-native';
 import {styles} from '../styles';
+//REDUX
+import {connect} from 'react-redux';
+import ACTION_TYPE from '../redux/actions/actions';
 import VoicesComponent from '../components/Voices';
 //import MapsComponent from '../components/Maps';
 import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import MapsBoxComponent from './../components/Mapsbox';
 
-export default class InitScreen extends PureComponent {
+class InitScreen extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -16,7 +19,13 @@ export default class InitScreen extends PureComponent {
   componentDidMount() {
     //this.onCheckPermission();
     this.setState({permissiongrand: true});
-    this.props.navigation.navigate('titlescreen');
+    console.log('token ', this.props.token);
+
+    if (this.props.token) {
+      this.props.navigation.navigate('inappscreen');
+    } else {
+      this.props.navigation.navigate('titlescreen');
+    }
   }
   //EVENT
   onCheckPermission() {
@@ -55,3 +64,24 @@ export default class InitScreen extends PureComponent {
     );
   }
 }
+function mapStateToProps(state) {
+  return {
+    friendlist: state.friendlist,
+    token: state.token,
+  };
+}
+function dispatchToProps(dispatch) {
+  return {
+    updateuser: user =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_USER,
+        value: user,
+      }),
+    updatetoken: user =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_TOKEN,
+        value: user,
+      }),
+  };
+}
+export default connect(mapStateToProps, dispatchToProps)(InitScreen);

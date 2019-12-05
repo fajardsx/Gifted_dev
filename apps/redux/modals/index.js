@@ -3,6 +3,7 @@ class MODAL {
     name: '',
     email: '',
     password: '',
+    password2: '',
     location: null,
   };
   static friend = {

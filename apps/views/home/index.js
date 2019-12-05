@@ -24,6 +24,8 @@ import Constants from '../../configs/constant';
 import Buttons from '../../components/Buttons';
 import SearchResulthScreen from './searchresultscreen';
 import {withNavigationFocus} from 'react-navigation';
+import {callPost} from '../../services';
+import API from '../../services/common/api';
 const iconSize = moderateScale(40);
 
 let context = null;
@@ -146,6 +148,31 @@ class HomeScreen extends Component {
     onCallTTS('Membuka Pengaturan');
     this.props.navigation.navigate('settingscreen');
   }
+  /** API */
+  postUpdatePosition(data) {
+    console.log('home/index.js => postUpdatePosition() data ', data);
+    let bodyFormData = new FormData();
+    bodyFormData.append('lat', data.latitude);
+    bodyFormData.append('long', data.longitude);
+    if (!data.latitude || !data.longitude) return;
+    Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
+    callPost(
+      API.UPDATE_LOCATION,
+      bodyFormData,
+      this.callbackUpdatePosition.bind(this),
+    );
+  }
+  callbackUpdatePosition(res) {
+    console.log('home/index.js => callbackUpdatePosition() result ', res);
+    if (res) {
+      if (res.error) {
+        //callTo
+        callAlert(Constants.NAME_APPS, `${res.error}, Gagal Update`);
+      } else if (res.success) {
+      }
+    }
+  }
+  //
   //=============================RENDER==========================================
   render() {
     const {permissiongrand, searchEnable, isnavi} = this.state;
@@ -159,6 +186,7 @@ class HomeScreen extends Component {
             target={this.props.friendtarget}
             onCancel={this.onCancelPress.bind(this)}
             isnavi={isnavi}
+            onUpdate={this.postUpdatePosition.bind(this)}
           />
         )} */}
         {permissiongrand == true && (
@@ -167,6 +195,7 @@ class HomeScreen extends Component {
             target={this.props.friendtarget}
             onCancel={this.onCancelPress.bind(this)}
             isnavi={isnavi}
+            onUpdate={this.postUpdatePosition.bind(this)}
           />
         )}
         {searchEnable && this.props.friendtarget == null && (
@@ -195,6 +224,7 @@ class HomeScreen extends Component {
 function mapStateToProps(state) {
   return {
     friendlist: state.friendlist,
+    token: state.token,
     friendtarget: state.currentFriendTarget,
   };
 }

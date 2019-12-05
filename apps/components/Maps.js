@@ -38,11 +38,32 @@ class MapsComponent extends PureComponent {
       target: null,
       naviMode: false,
       zoom: 17,
+      trackingposition: [],
     };
     context = this;
   }
   componentDidMount() {
     this.onReqUserLocation();
+    this.userposition = Geolocation.watchPosition(position => {
+      const lastposition = position;
+      console.log('Map.js => userposition', lastposition);
+      let trackingposition = Object.assign([], this.state.trackingposition);
+      let data = {
+        latitude: lastposition.coords.latitude,
+        longitude: lastposition.coords.longitude,
+      };
+      trackingposition.push({
+        longitude: lastposition.coords.longitude,
+        latitude: lastposition.coords.latitude,
+      });
+
+      this.setState({trackingposition}, () => {
+        this.props.onUpdate(data);
+      });
+    });
+  }
+  componentWillUnmount() {
+    this.userposition != null && Geolocation.clearWatch(this.userposition);
   }
   //RECEIVED UPDATE PROPS
   static getDerivedStateFromProps(props, state) {
@@ -82,7 +103,10 @@ class MapsComponent extends PureComponent {
               },
             },
             () => {
-              //this.onGetDirection();
+              this.props.onUpdate({
+                latitude: this.state.latitude,
+                longitude: this.state.longitude,
+              });
             },
           ),
         error => {
@@ -106,12 +130,14 @@ class MapsComponent extends PureComponent {
       let concatLot = [region.longitude, region.latitude];
       let locTarget = [target.kordinat.longitude, target.kordinat.latitude];
       console.log('onGetDirection', concatLot);
+
       this.getDirectionsNavigation(concatLot, locTarget);
+      //this.getDirections(concatLot, locTarget);
     }
   }
   //GET ROUTE
   async getDirectionsNavigation(startlocate, destinationlocate) {
-    console.log('getDirections');
+    console.log('getDirectionsNavigation');
     console.log('from', startlocate);
     console.log('to', destinationlocate);
 
@@ -154,7 +180,11 @@ class MapsComponent extends PureComponent {
     console.log('getDirections');
     try {
       let api = await fetch(
-        `https://maps.googleapis.com/maps/api/directions/json?origin=${startlocate}&destination=${destinationlocate}&key=${Constants.MAP_KEYS}`,
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${startlocate[1] +
+          ',' +
+          startlocate[0]}&destination=${destinationlocate[1] +
+          ',' +
+          destinationlocate[0]}&key=${Constants.MAP_KEYS}`,
       );
       let resultApi = await api.json();
       console.log('resultApi', resultApi);
@@ -167,7 +197,7 @@ class MapsComponent extends PureComponent {
           longitude: point[1],
         };
       });
-      //console.log('coords', coords);
+      console.log('coords', coords);
       this.setState({direction: coords});
       return coords;
     } catch (error) {
@@ -177,7 +207,8 @@ class MapsComponent extends PureComponent {
   }
   //
   onregionchange(region) {
-    this.setState({region});
+    //this.setState({region});
+    console.log('map.js => onregionchange => region', region);
   }
   //
   renderLineRoute() {
@@ -186,7 +217,7 @@ class MapsComponent extends PureComponent {
     if (direction == null) {
       return null;
     }
-    console.log('renderLine', direction);
+
     return (
       <Polyline
         coordinates={direction}
@@ -206,7 +237,7 @@ class MapsComponent extends PureComponent {
             provider={PROVIDER_GOOGLE}
             showsUserLocation
             initialRegion={this.state.region}
-            //onRegionChange={this.onregionchange.bind(this)}
+            onRegionChange={this.onregionchange.bind(this)}
             region={{
               latitude: latitude ? latitude : -6.2188339,
               longitude: longitude ? longitude : 106.7950098,
@@ -221,6 +252,9 @@ class MapsComponent extends PureComponent {
             />
           </MapView>
         )}
+        <View style={{position: 'absolute'}}>
+          <Text>{JSON.stringify(this.state.trackingposition)}</Text>
+        </View>
       </View>
     );
   }

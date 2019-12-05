@@ -1,6 +1,6 @@
 class Constants {
   static COPYRIGHT = 'Copyright ©  2019';
-  static NAME_APPS = 'Voice Navi';
+  static NAME_APPS = 'Gifted';
   //VERSION
   static APP_VERSION = '1';
   static APP_STATUS = '';
@@ -11,7 +11,7 @@ class Constants {
   static G = 'GET';
   static PU = 'PUTS';
   //MAP KEY
-  static MAP_KEYS = 'AIzaSyBdRkVZ941mf3epa2PRWQUid2QBwatwtlU';
+  static MAP_KEYS = 'AIzaSyBn9fVaS7-t3m7F1oVbytt3xa3raHf6B6U'; //AIzaSyBdRkVZ941mf3epa2PRWQUid2QBwatwtlU';
   static MAPBOX_KEYS =
     'pk.eyJ1IjoiZmFqYXJkc3giLCJhIjoiY2p1c202b3VpNDg3MjQzbnEydmV5bGJmNCJ9.rcCsymvwj6ubuu6gqUPJ5Q';
   //LOCALE
@@ -41,7 +41,7 @@ class Constants {
   static COMMAND_CARI = 1;
   static COMMAND_TAMBAH = 2;
   //DEBUG
-  static DEV_MODE = true;
+  static DEV_MODE = false;
 }
 
 export default Constants;

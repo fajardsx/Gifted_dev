@@ -26,7 +26,7 @@ export function callGet(_resturl, onComplete) {
   let didTimeOut = false;
   //data.append("user_id", user.getUsId());
   let _url = Constants.REST + _resturl;
-  console.log(_url);
+  console.log('GET ', _url);
   new Promise((resolve, reject) => {
     const Timeout = setTimeout(() => {
       didTimeOut = true;
@@ -72,7 +72,7 @@ export function callPost(_resturl, form, onComplete) {
   let didTimeOut = false;
 
   let _url = Constants.REST + _resturl;
-  console.log(_url);
+  console.log('POST ', _url);
   new Promise((resolve, reject) => {
     const Timeout = setTimeout(() => {
       didTimeOut = true;

@@ -1,9 +1,13 @@
 import React, {Component} from 'react';
 import {View, Text, Image} from 'react-native';
+//REDUX
+import {connect} from 'react-redux';
+import ACTION_TYPE from '../../redux/actions/actions';
+//
 import {styles} from '../../styles';
 import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
-import {convertWidth} from '../../configs/utils';
+import {convertWidth, callAlert} from '../../configs/utils';
 import Forminput from '../../components/Forminput';
 import {callVibrate} from './../../configs/utils';
 import {postLogin, callPost} from '../../services';
@@ -24,6 +28,7 @@ class Screenlogin extends Component {
   onChangePasswordInput = text => {
     this.setState({passwordtxt: text});
   };
+  //API
   onTryLogin() {
     // console.log('screenlogin', this.state.emailtxt);
     // console.log('screenlogin', this.state.passwordtxt);
@@ -38,11 +43,14 @@ class Screenlogin extends Component {
     callPost(API.LOGIN, bodyFormData, this.callbacklogin.bind(this));
   }
   callbacklogin(res) {
-    this.props.navigation.navigate('inappscreen');
     console.log(res);
     if (res) {
       if (res.error) {
         //callTo
+        callAlert(Constants.NAME_APPS, `${res.error}, Gagal Masuk`);
+      } else if (res.success) {
+        this.props.updatetoken(res.success.token);
+        this.props.navigation.navigate('inappscreen');
       }
     }
   }
@@ -96,4 +104,23 @@ class Screenlogin extends Component {
   }
 }
 
-export default Screenlogin;
+function mapStateToProps(state) {
+  return {
+    friendlist: state.friendlist,
+  };
+}
+function dispatchToProps(dispatch) {
+  return {
+    updateuser: user =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_USER,
+        value: user,
+      }),
+    updatetoken: user =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_TOKEN,
+        value: user,
+      }),
+  };
+}
+export default connect(mapStateToProps, dispatchToProps)(Screenlogin);
