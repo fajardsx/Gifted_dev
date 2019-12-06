@@ -5,23 +5,58 @@ import {
   TouchableOpacity,
   FlatList,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import Buttons from '../../components/Buttons';
-import {convertWidth} from './../../configs/utils';
+import {convertWidth, callAlert, onCallTTS} from './../../configs/utils';
 import {styles} from '../../styles';
 import {moderateScale} from '../../styles/scaling';
 //REDUX
 import {connect} from 'react-redux';
 import ACTION_TYPE from '../../redux/actions/actions';
+import API from '../../services/common/api';
+import {callPost} from '../../services';
+import Constants from '../../configs/constant';
 class KontakScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      datalist: this.props.friendlist,
+      datalist: [],
     };
   }
+  componentDidMount() {
+    this.getKontak();
+  }
+  /** API */
+  //get kontak
+  getKontak() {
+    console.log('home/index.js => getKontak() data ');
+    //if (!data.latitude || !data.longitude) return;
+
+    Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
+    callPost(
+      API.MY_CONTACT,
+      null,
+      (callbackgetkontak = res => {
+        console.log('home/index.js => callbackgetkontak() result ', res);
+        if (res) {
+          if (res.error) {
+            //callTo
+            onCallTTS(res.error);
+            //callAlert(Constants.NAME_APPS, `${res.error}`);
+          } else if (res.success) {
+            this.props.updateFriendlist(res.success);
+            this.setState({datalist: res.success});
+          }
+        }
+      }),
+    );
+  }
   onSelectFriend(item) {
-    this.props.navigation.navigate('detailkontakscreen', {datas: item});
+    this.props.navigation.navigate('detailkontakscreen', {
+      datas: item,
+      ismykontak: true,
+    });
   }
   render() {
     const {datalist} = this.state;
@@ -59,6 +94,12 @@ class KontakScreen extends Component {
               renderItem={this.celllist}
             />
           )}
+          {datalist.length == 0 && (
+            <View
+              style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+              <Text>Tidak Ada Kontak</Text>
+            </View>
+          )}
         </View>
         <View style={{flex: 0.2}}>
           <Buttons
@@ -75,17 +116,36 @@ class KontakScreen extends Component {
       onPress={() => this.onSelectFriend(item)}
       style={{
         borderWidth: 1,
-        marginVertical: 1,
-        width: convertWidth(80),
+        width: convertWidth(90),
+        minHeight: moderateScale(40),
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 10,
+        marginBottom: 5,
         paddingVertical: moderateScale(10),
       }}>
-      <Text style={{marginLeft: 10}}>{item.nama}</Text>
+      <View style={[styles.cellprofilsize, {marginHorizontal: 10}]}>
+        <Image
+          style={[
+            styles.cellprofilsize,
+            {borderRadius: moderateScale(100), overflow: 'hidden'},
+          ]}
+          source={
+            item.avatar
+              ? {uri: item.avatar}
+              : require('../../assets/images/profilpicture.png')
+          }
+          resizeMode={'cover'}
+        />
+      </View>
+      <Text>{item.name}</Text>
     </TouchableOpacity>
   );
 }
 function mapStateToProps(state) {
   return {
     friendlist: state.friendlist,
+    token: state.token,
   };
 }
 function dispatchToProps(dispatch) {
@@ -98,6 +158,11 @@ function dispatchToProps(dispatch) {
     updateTarget: values =>
       dispatch({
         type: ACTION_TYPE.UPDATE_TARGET,
+        value: values,
+      }),
+    updateFriendlist: values =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_KONTAKLIST,
         value: values,
       }),
   };

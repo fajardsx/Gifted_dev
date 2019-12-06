@@ -88,7 +88,7 @@ class ScreenRegister extends Component {
         callAlert(Constants.NAME_APPS, `${res.error}`);
         //callTo
       } else if (res.success) {
-        this.props.updateuser(usermodal);
+        //this.props.updateuser(usermodal);
         this.props.updatetoken(res.success.token);
         let delay = setTimeout(() => {
           this.props.navigation.navigate('inappscreen');
@@ -172,11 +172,6 @@ function mapStateToProps(state) {
 }
 function dispatchToProps(dispatch) {
   return {
-    updateuser: user =>
-      dispatch({
-        type: ACTION_TYPE.UPDATE_USER,
-        value: user,
-      }),
     updatetoken: user =>
       dispatch({
         type: ACTION_TYPE.UPDATE_TOKEN,

@@ -1,10 +1,15 @@
 class MODAL {
   static user = {
-    name: '',
+    alamat: null,
+    avatar: null,
     email: '',
-    password: '',
-    password2: '',
-    location: null,
+    email_verified_at: null,
+    id: null,
+    lat: '',
+    long: '',
+    name: '',
+    nohp: '',
+    type: '',
   };
   static friend = {
     id: -1,
@@ -17,6 +22,28 @@ class MODAL {
       longitudeDelta: 0.005,
       latitudeDelta: 0.005,
     },
+  };
+  static other_user = {
+    alamat: '',
+    avatar: '',
+    id: '',
+    lat: '',
+    long: '',
+    name: '',
+    nohp: '',
+    type: 'blind',
+  };
+  static profile = {
+    alamat: null,
+    avatar: null,
+    email: '',
+    email_verified_at: null,
+    id: null,
+    lat: '',
+    long: '',
+    name: '',
+    nohp: '',
+    type: '',
   };
 }
 

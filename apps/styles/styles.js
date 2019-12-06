@@ -11,4 +11,8 @@ export default {
     width: moderateScale(100),
     height: moderateScale(100),
   },
+  cellprofilsize: {
+    width: moderateScale(35),
+    height: moderateScale(35),
+  },
 };

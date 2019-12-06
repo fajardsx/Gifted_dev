@@ -46,8 +46,7 @@ class HomeScreen extends Component {
   componentDidMount() {
     this.props.updateTarget(null);
     this.onCheckPermission();
-    //this.setState({permissiongrand: true});
-    //this.props.navigation.navigate('titlescreen');
+    this.getProfile();
     this.focuslistener = this.props.navigation.addListener('didFocus', () => {
       if (this.voices) {
         this.voices.init();
@@ -114,24 +113,22 @@ class HomeScreen extends Component {
     this.setState({showSearch: false});
   }
   onProcessDirection() {
-    let name = this.props.friendtarget ? this.props.friendtarget.nama : 'teman';
+    let name = this.props.friendtarget ? this.props.friendtarget.name : 'teman';
     onCallTTS('Mencari Lokasi ' + name);
     console.log(
       'home/index.js => onProcessDirection => friendtarget',
       this.props.friendtarget,
     );
-    if (this.props.friendtarget) {
-      let locTarget =
-        this.props.friendtarget.kordinat.longitude +
-        ',' +
-        this.props.friendtarget.kordinat.latitude;
+    // if (this.props.friendtarget) {
+    //   let locTarget =
+    //     this.props.friendtarget.long + ',' + this.props.friendtarget.lat;
 
-      if (this.mapbox) {
-        //this.mapbox.onGetDirection(locTarget);
-      }
-    } else {
-      //return this.onProcessDirection();
-    }
+    //   if (this.mapbox) {
+    //     //this.mapbox.onGetDirection(locTarget);
+    //   }
+    // } else {
+    //   //return this.onProcessDirection();
+    // }
   }
   onCancelPress() {
     callVibrate();
@@ -149,6 +146,59 @@ class HomeScreen extends Component {
     this.props.navigation.navigate('settingscreen');
   }
   /** API */
+  //profile
+  getProfile() {
+    console.log('home/index.js => getProfile() data ');
+    let bodyFormData = new FormData();
+    bodyFormData.append('lat', 0);
+    bodyFormData.append('long', 0);
+    //if (!data.latitude || !data.longitude) return;
+    Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
+    callPost(
+      API.GET_PROFILE,
+      bodyFormData,
+      (callbackProfile = res => {
+        console.log('home/index.js => callbackProfile() result ', res);
+        if (res) {
+          if (res.error) {
+            //callTo
+            callAlert(
+              Constants.NAME_APPS,
+              `${res.error}, Gagal Menghubungi Server`,
+            );
+          } else if (res.success) {
+            this.props.updateuser(res.success);
+            this.getKontak();
+          }
+        }
+      }),
+    );
+  }
+  //get kontak
+  getKontak() {
+    console.log('home/index.js => getKontak() data ');
+    //if (!data.latitude || !data.longitude) return;
+
+    Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
+    callPost(
+      API.MY_CONTACT,
+      null,
+      (callbackgetkontak = res => {
+        console.log('home/index.js => callbackgetkontak() result ', res);
+        if (res) {
+          if (res.error) {
+            //callTo
+            onCallTTS(res.error);
+            //callAlert(Constants.NAME_APPS, `${res.error}`);
+          } else if (res.success) {
+            this.props.updateKontakList(res.success);
+            //this.setState({datalist: res.success});
+          }
+        }
+      }),
+    );
+  }
+  //update position
   postUpdatePosition(data) {
     console.log('home/index.js => postUpdatePosition() data ', data);
     let bodyFormData = new FormData();
@@ -178,9 +228,7 @@ class HomeScreen extends Component {
     const {permissiongrand, searchEnable, isnavi} = this.state;
     return (
       <SafeAreaView style={styles.container}>
-        {/* {permissiongrand == true && <MapsBoxComponent />}
-         */}
-        {/* {permissiongrand == true && (
+        {permissiongrand == true && (
           <MapsBoxComponent
             ref={this.mapboxs}
             target={this.props.friendtarget}
@@ -188,8 +236,8 @@ class HomeScreen extends Component {
             isnavi={isnavi}
             onUpdate={this.postUpdatePosition.bind(this)}
           />
-        )} */}
-        {permissiongrand == true && (
+        )}
+        {/* {permissiongrand == true && (
           <MapsComponent
             ref={this.mapboxs}
             target={this.props.friendtarget}
@@ -197,7 +245,7 @@ class HomeScreen extends Component {
             isnavi={isnavi}
             onUpdate={this.postUpdatePosition.bind(this)}
           />
-        )}
+        )} */}
         {searchEnable && this.props.friendtarget == null && (
           <VoicesComponent
             ref={c => (this.voices = c)}
@@ -226,19 +274,30 @@ function mapStateToProps(state) {
     friendlist: state.friendlist,
     token: state.token,
     friendtarget: state.currentFriendTarget,
+    user: state.user,
   };
 }
 function dispatchToProps(dispatch) {
   return {
-    updateIsFirst: isfirst =>
+    updateIsFirst: data =>
       dispatch({
         type: ACTION_TYPE.CHANGE_STATUS_FIRSTTIME,
-        value: isfirst,
+        value: data,
       }),
-    updateTarget: isfirst =>
+    updateTarget: data =>
       dispatch({
         type: ACTION_TYPE.UPDATE_TARGET,
-        value: isfirst,
+        value: data,
+      }),
+    updateKontakList: data =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_KONTAKLIST,
+        value: data,
+      }),
+    updateuser: user =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_USER,
+        value: user,
       }),
   };
 }

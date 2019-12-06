@@ -30,6 +30,9 @@ export default class Forminput extends PureComponent {
       if (props.absolute) {
         styles.position = props.absolute ? 'absolute' : 'relative';
       }
+      if (props.editable) {
+        styles.editable = props.editable;
+      }
       if (props.stickybottom) {
         styles.position = 'absolute';
         styles.bottom = 0;
@@ -60,6 +63,7 @@ export default class Forminput extends PureComponent {
             this.props.keyboardtype ? this.props.keyboardtype : 'default'
           }
           secureTextEntry={this.props.securetxt ? this.props.securetxt : false}
+          editable={this.props.editable != null ? this.props.editable : true}
           onChangeText={this.props.onChangeText}
           defaultValue={this.props.defaultText}
           style={[this.props.styleinput ? this.props.styleinput : null]}

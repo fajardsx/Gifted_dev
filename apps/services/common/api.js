@@ -9,6 +9,7 @@ class API {
   static GET_LOCATION = 'get-loc';
   static UPLOAD_AVATAR = 'upload-avatar';
   static GET_PROFILE_FRIEND = 'profile-teman';
+  static GET_PROFILE = 'my-profile';
 }
 
 export default API;

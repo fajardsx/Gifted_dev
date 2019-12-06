@@ -70,7 +70,7 @@ class KontakEditScreen extends Component {
                 //textAlign: 'center',
                 fontSize: moderateScale(21),
               }}>
-              {data ? data.nama : 'tidak ada nama'}
+              {data ? data.name : 'tidak ada nama'}
             </Text>
           </View>
         </View>

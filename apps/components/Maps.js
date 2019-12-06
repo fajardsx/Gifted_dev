@@ -128,7 +128,7 @@ class MapsComponent extends PureComponent {
     const {region} = this.state;
     if (target) {
       let concatLot = [region.longitude, region.latitude];
-      let locTarget = [target.kordinat.longitude, target.kordinat.latitude];
+      let locTarget = [target.long, target.lat];
       console.log('onGetDirection', concatLot);
 
       this.getDirectionsNavigation(concatLot, locTarget);

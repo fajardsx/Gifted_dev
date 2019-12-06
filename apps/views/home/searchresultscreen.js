@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import {styles} from '../../styles';
 import Modal from 'react-native-modal';
@@ -89,7 +90,7 @@ class SearchResulthScreen extends PureComponent {
       let resData = '';
 
       // let keyCity = res.city_name ? res.city_name.toUpperCase() : '';
-      let keyName = res ? res.nama.toUpperCase() : '';
+      let keyName = res ? res.name.toUpperCase() : '';
       console.log('processSearch() => res', res);
       console.log('processSearch() => searchtxt', searchtxt);
       resData = `${keyName} `;
@@ -205,10 +206,29 @@ class SearchResulthScreen extends PureComponent {
       onPress={() => this.onSelectFriend(item)}
       style={{
         borderWidth: 1,
-        width: convertWidth(80),
+        width: convertWidth(90),
+        minHeight: moderateScale(40),
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 10,
+        marginBottom: 5,
         paddingVertical: moderateScale(10),
       }}>
-      <Text style={{marginLeft: 10}}>{item.nama}</Text>
+      <View style={[styles.cellprofilsize, {marginHorizontal: 10}]}>
+        <Image
+          style={[
+            styles.cellprofilsize,
+            {borderRadius: moderateScale(100), overflow: 'hidden'},
+          ]}
+          source={
+            item.avatar
+              ? {uri: item.avatar}
+              : require('../../assets/images/profilpicture.png')
+          }
+          resizeMode={'cover'}
+        />
+      </View>
+      <Text>{item.name}</Text>
     </TouchableOpacity>
   );
 }

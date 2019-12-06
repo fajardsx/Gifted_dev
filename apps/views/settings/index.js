@@ -17,6 +17,7 @@ class SettingScreen extends Component {
         this.props.navigation.navigate('kontakscreen');
         break;
       case 'profil':
+        this.props.navigation.navigate('profilescreen');
         break;
       case 'cariteman':
         this.props.navigation.navigate('carikontakscreen');
@@ -73,7 +74,7 @@ class SettingScreen extends Component {
             <Text>Cari tempat</Text>
           </Buttons>
         </View>
-        <View style={styles.container}>
+        <View style={[styles.container, {alignItems: 'flex-end'}]}>
           <Buttons
             style={{margin: 10, width: convertWidth(95)}}
             onPressButton={() => this.onEventClick('kembali')}>

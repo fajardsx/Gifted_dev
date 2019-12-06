@@ -9,17 +9,25 @@ import {convertWidth, callVibrate} from './../../configs/utils';
 import {styles} from '../../styles';
 import {moderateScale} from '../../styles/scaling';
 import Forminput from '../../components/Forminput';
-
+import API from '../../services/common/api';
+import {callPost} from '../../services';
+import Constants from '../../configs/constant';
 class KontakDetailScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
       data: null,
+      ismykontak: false,
     };
   }
   componentDidMount() {
     const dataprops = this.props.screenProps.navigation.getParam('datas', null);
-    this.setState({data: dataprops});
+    const ismykontak = this.props.screenProps.navigation.getParam(
+      'ismykontak',
+      false,
+    );
+    console.log(dataprops);
+    this.setState({data: dataprops, ismykontak});
   }
   //
   onEventClick(id) {
@@ -35,6 +43,32 @@ class KontakDetailScreen extends Component {
         break;
     }
   }
+  /** API */
+  //get kontak
+  getAddKontak() {
+    console.log('kontak/index.js => getAddKontak() data ');
+    //if (!data.latitude || !data.longitude) return;
+    let bodyFormData = new FormData();
+    bodyFormData.append('userid', this.state.data.id);
+    Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
+    callPost(
+      API.ADD_FRIEND,
+      bodyFormData,
+      (callbackAddKontak = res => {
+        console.log('kontak/index.js => callbackAddKontak() result ', res);
+        if (res) {
+          if (res.error) {
+            //callTo
+            //callAlert(Constants.NAME_APPS, `${res.error}`);
+          } else if (res.success) {
+            //this.props.updateuser(res.success);
+            //this.setState({datalist: res.success});
+            this.onGoback();
+          }
+        }
+      }),
+    );
+  }
   onGoback() {
     callVibrate();
     this.props.screenProps.navigation.goBack();
@@ -48,7 +82,8 @@ class KontakDetailScreen extends Component {
   }
   //
   render() {
-    const {data} = this.state;
+    const {data, ismykontak} = this.state;
+    if (data == null) return null;
     return (
       <View
         style={[
@@ -86,7 +121,7 @@ class KontakDetailScreen extends Component {
               <Image
                 style={styles.profilsize}
                 source={
-                  data
+                  data.avatar
                     ? {uri: data.avatar}
                     : require('../../assets/images/profilpicture.png')
                 }
@@ -100,28 +135,11 @@ class KontakDetailScreen extends Component {
                 //textAlign: 'center',
                 fontSize: moderateScale(21),
               }}>
-              {data ? data.nama : 'tidak ada nama'}
+              {data ? data.name : 'tidak ada nama'}
             </Text>
           </View>
-          <Buttons
-            style={{
-              margin: 10,
-              width: convertWidth(50),
-              height: moderateScale(80),
-            }}
-            onPressButton={() => this.onEventClick('lokasi')}>
-            <Text>{'Lokasi\nKontak'}</Text>
-          </Buttons>
-          <Buttons
-            style={{margin: 10, width: convertWidth(95)}}
-            onPressButton={() => this.onEventClick('ubah')}>
-            <Text>Ubah Kontak</Text>
-          </Buttons>
-          <Buttons
-            style={{margin: 10, width: convertWidth(95)}}
-            onPressButton={() => this.onEventClick('hapus')}>
-            <Text>Hapus Kontak</Text>
-          </Buttons>
+          {ismykontak == true && this.btnTeman()}
+          {ismykontak == false && this.tambahTeman()}
         </View>
         <View style={{flex: 0.5}}>
           <Buttons
@@ -133,11 +151,46 @@ class KontakDetailScreen extends Component {
       </View>
     );
   }
+  tambahTeman() {
+    return (
+      <Buttons
+        style={{margin: 10, width: convertWidth(95)}}
+        onPressButton={this.getAddKontak.bind(this)}>
+        <Text>Tambah Teman</Text>
+      </Buttons>
+    );
+  }
+  btnTeman() {
+    return (
+      <View>
+        <Buttons
+          style={{
+            margin: 10,
+            width: convertWidth(50),
+            height: moderateScale(80),
+          }}
+          onPressButton={() => this.onEventClick('lokasi')}>
+          <Text>{'Lokasi\nKontak'}</Text>
+        </Buttons>
+        <Buttons
+          style={{margin: 10, width: convertWidth(95)}}
+          onPressButton={() => this.onEventClick('ubah')}>
+          <Text>Ubah Kontak</Text>
+        </Buttons>
+        <Buttons
+          style={{margin: 10, width: convertWidth(95)}}
+          onPressButton={() => this.onEventClick('hapus')}>
+          <Text>Hapus Kontak</Text>
+        </Buttons>
+      </View>
+    );
+  }
 }
 function mapStateToProps(state) {
   return {
     friendlist: state.friendlist,
     friendtarget: state.currentFriendTarget,
+    token: state.token,
   };
 }
 function dispatchToProps(dispatch) {

@@ -70,18 +70,4 @@ function mapStateToProps(state) {
     token: state.token,
   };
 }
-function dispatchToProps(dispatch) {
-  return {
-    updateuser: user =>
-      dispatch({
-        type: ACTION_TYPE.UPDATE_USER,
-        value: user,
-      }),
-    updatetoken: user =>
-      dispatch({
-        type: ACTION_TYPE.UPDATE_TOKEN,
-        value: user,
-      }),
-  };
-}
-export default connect(mapStateToProps, dispatchToProps)(InitScreen);
+export default connect(mapStateToProps)(InitScreen);

@@ -4,36 +4,9 @@ import MODAL from '../modals/index';
 const initState = {
   isFirst: true,
   token: null,
-  user: null,
+  user: MODAL.user,
   currentFriendTarget: null,
-  friendlist: [
-    {
-      id: 1,
-      nama: 'Agung',
-      avatar:
-        'https://images.pexels.com/photos/414612/pexels-photo-414612.jpeg',
-      alamat: '',
-      kordinat: {
-        latitude: -6.3125831,
-        longitude: 106.859799,
-        longitudeDelta: 0.005,
-        latitudeDelta: 0.005,
-      },
-    },
-    {
-      id: 2,
-      nama: 'Fajar',
-      avatar:
-        'https://images.pexels.com/photos/237018/pexels-photo-237018.jpeg',
-      alamat: '',
-      kordinat: {
-        latitude: -6.203356,
-        longitude: 106.766962,
-        longitudeDelta: 0.005,
-        latitudeDelta: 0.005,
-      },
-    },
-  ],
+  friendlist: [],
 };
 
 //reducers
@@ -47,6 +20,8 @@ const reducer = (state = initState, action) => {
       return {...state, currentFriendTarget: action.value};
     case ACTIONTYPE.UPDATE_TOKEN:
       return {...state, token: action.value};
+    case ACTIONTYPE.UPDATE_KONTAKLIST:
+      return {...state, friendlist: action.value};
   }
   return state;
 };

@@ -60,7 +60,7 @@ class ModalSearch extends PureComponent {
       let resData = '';
 
       // let keyCity = res.city_name ? res.city_name.toUpperCase() : '';
-      let keyName = res.nama ? res.nama.toUpperCase() : '';
+      let keyName = res.name ? res.name.toUpperCase() : '';
       console.log('processSearch() => res', res);
       console.log('processSearch() => searchtxt', searchtxt);
       resData = `${keyName} `;
@@ -143,7 +143,7 @@ class ModalSearch extends PureComponent {
         width: convertWidth(80),
         paddingVertical: moderateScale(10),
       }}>
-      <Text style={{marginLeft: 10}}>{item.nama}</Text>
+      <Text style={{marginLeft: 10}}>{item.name}</Text>
     </TouchableOpacity>
   );
 }

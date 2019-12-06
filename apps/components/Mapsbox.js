@@ -159,7 +159,7 @@ class MapsBoxComponent extends Component {
       const {latitude, longitude} = this.state;
 
       let concatLot = [longitude, latitude];
-      let locTarget = [target.kordinat.longitude, target.kordinat.latitude];
+      let locTarget = [parseFloat(target.long), parseFloat(target.lat)];
 
       this.getDirectionsNavigation(concatLot, locTarget);
     }
@@ -280,8 +280,8 @@ class MapsBoxComponent extends Component {
               <MapboxGL.ShapeSource
                 id="destination"
                 shape={MapboxGL.geoUtils.makePoint([
-                  target.kordinat.longitude,
-                  target.kordinat.latitude,
+                  parseFloat(target.long),
+                  parseFloat(target.lat),
                 ])}>
                 {
                   //ADD DESTINATION CIRCLE

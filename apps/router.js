@@ -11,6 +11,7 @@ import SettingScreen from './views/settings';
 import KontakScreen from './views/settings/kontaksaya';
 import CariKontakScreen from './views/settings/carikontak';
 import KontakDetailScreen from './views/kontak';
+import ProfileScreen from './views/profil/index';
 
 const TitleScene = createStackNavigator(
   {
@@ -64,6 +65,9 @@ const InAppScene = createStackNavigator(
     },
     detailkontakscreen: {
       screen: props => <KontakScene screenProps={props} />,
+    },
+    profilescreen: {
+      screen: ProfileScreen,
     },
   },
   {
