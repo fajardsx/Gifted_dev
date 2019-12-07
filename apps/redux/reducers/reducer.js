@@ -7,6 +7,7 @@ const initState = {
   user: MODAL.user,
   currentFriendTarget: null,
   friendlist: [],
+  appmode: 0,
 };
 
 //reducers
@@ -22,6 +23,8 @@ const reducer = (state = initState, action) => {
       return {...state, token: action.value};
     case ACTIONTYPE.UPDATE_KONTAKLIST:
       return {...state, friendlist: action.value};
+    case ACTIONTYPE.UPDATE_MODE:
+      return {...state, appmode: action.value};
   }
   return state;
 };

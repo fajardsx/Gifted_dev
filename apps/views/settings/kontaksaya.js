@@ -101,13 +101,6 @@ class KontakScreen extends Component {
             </View>
           )}
         </View>
-        <View style={{flex: 0.2}}>
-          <Buttons
-            style={{margin: 10, width: convertWidth(95)}}
-            onPressButton={() => this.props.navigation.goBack()}>
-            <Text>Kembali</Text>
-          </Buttons>
-        </View>
       </View>
     );
   }

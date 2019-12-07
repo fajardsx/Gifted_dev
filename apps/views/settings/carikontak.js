@@ -182,7 +182,7 @@ class CariKontakScreen extends PureComponent {
               marginLeft: moderateScale(20),
               fontSize: moderateScale(21),
             }}>
-            {'Cari Kontak'}
+            {'Cari Teman'}
           </Text>
         </View>
         <View style={{flex: 1, backgroundColor: '#fff', alignItems: 'center'}}>

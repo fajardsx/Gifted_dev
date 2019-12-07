@@ -13,6 +13,8 @@ import {callVibrate} from './../../configs/utils';
 import {postLogin, callPost} from '../../services';
 import API from '../../services/common/api';
 import Constants from '../../configs/constant';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import SafeAreaView from 'react-native-safe-area-view';
 
 class Screenlogin extends Component {
   constructor(props) {
@@ -57,7 +59,7 @@ class Screenlogin extends Component {
   //
   render() {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <Image
             style={{width: convertWidth(50), height: moderateScale(200)}}
@@ -86,20 +88,20 @@ class Screenlogin extends Component {
             styleinput={{borderBottomWidth: 1}}
             title={'Password'}
           />
-        </View>
-        <View
-          style={{
-            flex: 0.5,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
+          <TouchableOpacity>
+            <Text>Lupa Password</Text>
+          </TouchableOpacity>
           <Buttons
-            style={{margin: 10, width: convertWidth(95)}}
+            style={{
+              marginTop: moderateScale(50),
+              margin: 10,
+              width: convertWidth(95),
+            }}
             onPressButton={this.onTryLogin.bind(this)}>
             <Text>Submit</Text>
           </Buttons>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 }

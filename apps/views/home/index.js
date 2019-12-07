@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {View, Text, SafeAreaView, TouchableOpacity} from 'react-native';
-import {styles} from '../../styles';
+import {View, Text, SafeAreaView, TouchableOpacity, Image} from 'react-native';
+import {styles, colors, images} from '../../styles';
 import VoicesComponent from '../../components/Voices';
 import MapsComponent from '../../components/Maps';
 import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
@@ -12,6 +12,8 @@ import ACTION_TYPE from '../../redux/actions/actions';
 import MapsBoxComponent from '../../components/Mapsbox';
 import {moderateScale} from '../../styles/scaling';
 import Iconsetting from '../../assets/images/vector/setting.svg';
+import IconButa from '../../assets/images/vector/iconbuta.svg';
+import IconTuli from '../../assets/images/vector/icontuli.svg';
 import {
   callVibrate,
   findCommad,
@@ -78,7 +80,7 @@ class HomeScreen extends Component {
               'The permission has not been requested / is denied but requestable',
             );
             request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(result => {
-              this.onCheckPermission();
+              //this.onCheckPermission();
             });
             break;
           case RESULTS.GRANTED:
@@ -90,7 +92,7 @@ class HomeScreen extends Component {
             break;
         }
       })
-      .catch(error => console.log(error));
+      .catch(error => console.log('onCheckPermission() ', error));
   }
   //Callback
   onCallbackResult(data) {
@@ -198,6 +200,10 @@ class HomeScreen extends Component {
       }),
     );
   }
+  //change mode
+  onChangeMode() {
+    this.props.updatemode(this.props.appmode == 0 ? 1 : 0);
+  }
   //update position
   postUpdatePosition(data) {
     console.log('home/index.js => postUpdatePosition() data ', data);
@@ -228,6 +234,7 @@ class HomeScreen extends Component {
     const {permissiongrand, searchEnable, isnavi} = this.state;
     return (
       <SafeAreaView style={styles.container}>
+        {this.headerHome()}
         {permissiongrand == true && (
           <MapsBoxComponent
             ref={this.mapboxs}
@@ -255,16 +262,117 @@ class HomeScreen extends Component {
             style={{position: 'absolute'}}
           />
         )}
-
-        <View style={{position: 'absolute', top: '3%', left: '5%'}}>
-          <TouchableOpacity onPress={() => this.onOpenSetting()}>
-            <Iconsetting height={iconSize} width={iconSize} />
-          </TouchableOpacity>
-        </View>
       </SafeAreaView>
     );
   }
-
+  headerHome() {
+    return (
+      <View
+        style={[
+          styles.headerstyle,
+          {borderBottomWidth: 0.5, borderColor: colors.main.COLOR_PRIMARY_3},
+        ]}>
+        {this.props.user && (
+          <View
+            style={{
+              width: convertWidth(20),
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <TouchableOpacity
+              style={{
+                height: iconSize + 10,
+                width: iconSize + 10,
+                borderRadius: iconSize,
+                backgroundColor: colors.background.COLOR_PRIMARY_1,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              onPress={() => this.props.navigation.navigate('profilescreen')}>
+              <Image
+                style={[
+                  styles.cellPhotosize,
+                  {borderRadius: moderateScale(100), overflow: 'hidden'},
+                ]}
+                source={
+                  this.props.user.avatar
+                    ? {uri: this.props.user.avatar}
+                    : images.defaultavatar
+                }
+                resizeMode={'cover'}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
+        <View
+          style={{
+            width: convertWidth(50),
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Image
+            style={[styles.logoPhotosize]}
+            source={images.logo}
+            resizeMode={'cover'}
+          />
+        </View>
+        <View
+          style={{
+            width: convertWidth(30),
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          {this.switchMode()}
+        </View>
+      </View>
+    );
+  }
+  switchMode() {
+    return (
+      <View style={{alignItems: 'center'}}>
+        <TouchableOpacity
+          onPress={() => this.onChangeMode()}
+          style={{
+            flexDirection: 'row',
+            width: convertWidth(25),
+            borderWidth: 0.5,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: colors.background.COLOR_PRIMARY_2,
+            borderRadius: iconSize,
+          }}>
+          <View
+            style={{
+              height: iconSize + 10,
+              width: iconSize + 10,
+              borderRadius: iconSize,
+              backgroundColor:
+                this.props.appmode == 0
+                  ? colors.background.COLOR_PRIMARY_1
+                  : colors.background.COLOR_PRIMARY_2,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <IconButa height={iconSize} width={iconSize} />
+          </View>
+          <View
+            style={{
+              height: iconSize + 10,
+              width: iconSize + 10,
+              borderRadius: iconSize,
+              backgroundColor:
+                this.props.appmode == 1
+                  ? colors.background.COLOR_PRIMARY_1
+                  : colors.background.COLOR_PRIMARY_2,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <IconTuli height={iconSize} width={iconSize} />
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
   //modal search
   modalSearch() {}
 }
@@ -275,6 +383,7 @@ function mapStateToProps(state) {
     token: state.token,
     friendtarget: state.currentFriendTarget,
     user: state.user,
+    appmode: state.appmode,
   };
 }
 function dispatchToProps(dispatch) {
@@ -298,6 +407,11 @@ function dispatchToProps(dispatch) {
       dispatch({
         type: ACTION_TYPE.UPDATE_USER,
         value: user,
+      }),
+    updatemode: data =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_MODE,
+        value: data,
       }),
   };
 }

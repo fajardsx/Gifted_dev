@@ -141,7 +141,7 @@ class MapsBoxComponent extends Component {
           ),
         error => {
           console.log('error', error);
-          this.onReqUserLocation();
+          //this.onReqUserLocation();
         },
         {
           enableHighAccuracy: true,

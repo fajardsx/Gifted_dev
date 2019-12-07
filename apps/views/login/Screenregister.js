@@ -1,6 +1,14 @@
 import React, {Component} from 'react';
-import {View, Text, SafeAreaView, Keyboard} from 'react-native';
-import {styles} from '../../styles';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  Keyboard,
+  Image,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+} from 'react-native';
+import {styles, images} from '../../styles';
 import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
 import {
@@ -100,68 +108,72 @@ class ScreenRegister extends Component {
   //
   render() {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <Text
-            style={{
-              fontSize: moderateScale(21),
-              paddingBottom: moderateScale(40),
-            }}>
-            Gifted
-          </Text>
-          <Text
-            style={{
-              fontSize: moderateScale(15),
-              //paddingBottom: moderateScale(50),
-            }}>
-            Register
-          </Text>
-          <Forminput
-            stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-            defaultText={this.state.nametxt}
-            onChangeText={this.onChangeNameInput}
-            styleinput={{borderBottomWidth: 1}}
-            title={'Name'}
-          />
-          <Forminput
-            keyboardtype={'email-address'}
-            stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-            defaultText={this.state.emailtxt}
-            onChangeText={this.onChangeEmailInput}
-            styleinput={{borderBottomWidth: 1}}
-            title={'Email'}
-          />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        style={{flex: 1}}>
+        <SafeAreaView style={styles.container}>
+          <TouchableWithoutFeedback
+            onPress={Keyboard.dismiss}
+            style={styles.container}>
+            <View
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Image
+                style={{width: convertWidth(25), height: moderateScale(100)}}
+                source={images.logo}
+                resizeMode={'contain'}
+              />
+              <Text
+                style={{
+                  fontSize: moderateScale(15),
+                  //paddingBottom: moderateScale(50),
+                }}>
+                Register
+              </Text>
+              <Forminput
+                stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
+                defaultText={this.state.nametxt}
+                onChangeText={this.onChangeNameInput}
+                styleinput={{borderBottomWidth: 1}}
+                title={'Name'}
+              />
+              <Forminput
+                keyboardtype={'email-address'}
+                stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
+                defaultText={this.state.emailtxt}
+                onChangeText={this.onChangeEmailInput}
+                styleinput={{borderBottomWidth: 1}}
+                title={'Email'}
+              />
 
-          <Forminput
-            securetxt={true}
-            stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-            defaultText={this.state.passwordtxt}
-            onChangeText={this.onChangePasswordInput}
-            styleinput={{borderBottomWidth: 1}}
-            title={'Password'}
-          />
-          <Forminput
-            securetxt={true}
-            stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-            defaultText={this.state.password2txt}
-            onChangeText={this.onChangePassword2Input}
-            styleinput={{borderBottomWidth: 1}}
-            title={'Ulangi Password'}
-          />
-        </View>
-        <View
-          style={{
-            //flex: 0.5,
-            justifyContent: 'center',
-            //alignItems: 'center',
-          }}>
-          <Buttons
-            style={{width: convertWidth(100)}}
-            onPressButton={this.onTryLRegister.bind(this)}>
-            <Text>Register</Text>
-          </Buttons>
-        </View>
-      </SafeAreaView>
+              <Forminput
+                securetxt={true}
+                stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
+                defaultText={this.state.passwordtxt}
+                onChangeText={this.onChangePasswordInput}
+                styleinput={{borderBottomWidth: 1}}
+                title={'Password'}
+              />
+              <Forminput
+                securetxt={true}
+                stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
+                defaultText={this.state.password2txt}
+                onChangeText={this.onChangePassword2Input}
+                styleinput={{borderBottomWidth: 1}}
+                title={'Ulangi Password'}
+              />
+              <Buttons
+                style={{width: convertWidth(100), marginTop: moderateScale(20)}}
+                onPressButton={this.onTryLRegister.bind(this)}>
+                <Text>Register</Text>
+              </Buttons>
+            </View>
+          </TouchableWithoutFeedback>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     );
   }
 }

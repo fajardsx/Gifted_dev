@@ -111,7 +111,7 @@ class MapsComponent extends PureComponent {
           ),
         error => {
           console.log('error', error);
-          this.onReqUserLocation();
+          //this.onReqUserLocation();
         },
         {
           enableHighAccuracy: true,
