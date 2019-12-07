@@ -25,6 +25,15 @@ const reducer = (state = initState, action) => {
       return {...state, friendlist: action.value};
     case ACTIONTYPE.UPDATE_MODE:
       return {...state, appmode: action.value};
+    case ACTIONTYPE.USER_LOGOUT:
+      return {
+        isFirst: true,
+        token: null,
+        user: MODAL.user,
+        currentFriendTarget: null,
+        friendlist: [],
+        appmode: 0,
+      };
   }
   return state;
 };

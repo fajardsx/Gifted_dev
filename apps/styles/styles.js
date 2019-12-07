@@ -5,6 +5,10 @@ export default {
   container: {
     flex: 1,
   },
+  containerDimension: {
+    width: convertWidth(100),
+    height: convertHeight(100),
+  },
   centercontainer: {
     justifyContent: 'center',
   },

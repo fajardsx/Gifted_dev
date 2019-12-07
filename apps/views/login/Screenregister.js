@@ -16,6 +16,8 @@ import {
   callVibrate,
   callAlert,
   validateEmail,
+  loadingScreen,
+  showToast,
 } from '../../configs/utils';
 import Forminput from '../../components/Forminput';
 //REDUX
@@ -34,6 +36,7 @@ class ScreenRegister extends Component {
       nametxt: '',
       passwordtxt: '',
       password2txt: '',
+      isloading: false,
     };
   }
   onChangeEmailInput = text => {
@@ -58,29 +61,21 @@ class ScreenRegister extends Component {
     usermodal.password = this.state.passwordtxt;
     usermodal.password2 = this.state.password2txt;
 
-    if (Constants.DEV_MODE) {
-      this.props.navigation.navigate('inappscreen');
-      this.props.updateuser(usermodal);
-    }
-
     if (this.state.nametxt.length < 2)
-      return callAlert(Constants.NAME_APPS, 'Kolom Nama Tidak Lengkap');
+      return showToast('Kolom Nama Tidak Lengkap');
     if (this.state.emailtxt.length < 2)
-      return callAlert(Constants.NAME_APPS, 'Kolom Email Tidak Lengkap');
+      return showToast('Kolom Email Tidak Lengkap');
     if (this.state.passwordtxt.length < 6)
-      return callAlert(Constants.NAME_APPS, 'Kolom Password Tidak Lengkap');
+      return showToast('Kolom Password Tidak Lengkap');
     if (this.state.password2txt.length < 6)
-      return callAlert(
-        Constants.NAME_APPS,
-        'Kolom Ulangi Password Tidak Lengkap',
-      );
+      return showToast('Kolom Ulangi Password Tidak Lengkap');
 
     if (validateEmail(this.state.emailtxt) == false)
-      return callAlert(Constants.NAME_APPS, 'Format Email Tidak Sesuai');
+      return showToast('Format Email Tidak Sesuai');
     if (usermodal.password != usermodal.password2)
-      return callAlert(Constants.NAME_APPS, 'Passowrd tidak sama');
+      return showToast('Passowrd tidak sama');
     callVibrate();
-
+    this.setState({isloading: true});
     let bodyFormData = new FormData();
     bodyFormData.append('name', this.state.nametxt);
     bodyFormData.append('email', this.state.emailtxt);
@@ -91,89 +86,90 @@ class ScreenRegister extends Component {
   }
   callbackregister(res) {
     console.log(res);
+    this.setState({isloading: false});
     if (res) {
       if (res.error) {
-        callAlert(Constants.NAME_APPS, `${res.error}`);
+        showToast(`${res.error}`);
         //callTo
       } else if (res.success) {
         //this.props.updateuser(usermodal);
+        showToast('Daftar Berhasil');
         this.props.updatetoken(res.success.token);
         let delay = setTimeout(() => {
           this.props.navigation.navigate('inappscreen');
           clearTimeout(delay);
         }, 2000);
       }
+    } else {
+      showToast('Gagal Daftar');
     }
   }
   //
   render() {
     return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        style={{flex: 1}}>
-        <SafeAreaView style={styles.container}>
-          <TouchableWithoutFeedback
-            onPress={Keyboard.dismiss}
-            style={styles.container}>
-            <View
+      <SafeAreaView style={styles.container}>
+        <TouchableWithoutFeedback
+          onPress={Keyboard.dismiss}
+          style={styles.container}>
+          <View
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Image
+              style={{width: convertWidth(25), height: moderateScale(100)}}
+              source={images.logo}
+              resizeMode={'contain'}
+            />
+            <Text
               style={{
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
+                fontSize: moderateScale(15),
+                //paddingBottom: moderateScale(50),
               }}>
-              <Image
-                style={{width: convertWidth(25), height: moderateScale(100)}}
-                source={images.logo}
-                resizeMode={'contain'}
-              />
-              <Text
-                style={{
-                  fontSize: moderateScale(15),
-                  //paddingBottom: moderateScale(50),
-                }}>
-                Register
-              </Text>
-              <Forminput
-                stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-                defaultText={this.state.nametxt}
-                onChangeText={this.onChangeNameInput}
-                styleinput={{borderBottomWidth: 1}}
-                title={'Name'}
-              />
-              <Forminput
-                keyboardtype={'email-address'}
-                stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-                defaultText={this.state.emailtxt}
-                onChangeText={this.onChangeEmailInput}
-                styleinput={{borderBottomWidth: 1}}
-                title={'Email'}
-              />
+              Register
+            </Text>
+            <Forminput
+              stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
+              defaultText={this.state.nametxt}
+              onChangeText={this.onChangeNameInput}
+              styleinput={{borderBottomWidth: 1}}
+              title={'Name'}
+            />
+            <Forminput
+              keyboardtype={'email-address'}
+              stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
+              defaultText={this.state.emailtxt}
+              onChangeText={this.onChangeEmailInput}
+              styleinput={{borderBottomWidth: 1}}
+              title={'Email'}
+            />
 
-              <Forminput
-                securetxt={true}
-                stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-                defaultText={this.state.passwordtxt}
-                onChangeText={this.onChangePasswordInput}
-                styleinput={{borderBottomWidth: 1}}
-                title={'Password'}
-              />
-              <Forminput
-                securetxt={true}
-                stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-                defaultText={this.state.password2txt}
-                onChangeText={this.onChangePassword2Input}
-                styleinput={{borderBottomWidth: 1}}
-                title={'Ulangi Password'}
-              />
-              <Buttons
-                style={{width: convertWidth(100), marginTop: moderateScale(20)}}
-                onPressButton={this.onTryLRegister.bind(this)}>
-                <Text>Register</Text>
-              </Buttons>
-            </View>
-          </TouchableWithoutFeedback>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+            <Forminput
+              securetxt={true}
+              stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
+              defaultText={this.state.passwordtxt}
+              onChangeText={this.onChangePasswordInput}
+              styleinput={{borderBottomWidth: 1}}
+              title={'Password'}
+            />
+            <Forminput
+              securetxt={true}
+              stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
+              defaultText={this.state.password2txt}
+              onChangeText={this.onChangePassword2Input}
+              styleinput={{borderBottomWidth: 1}}
+              title={'Ulangi Password'}
+            />
+            <Buttons
+              style={{width: convertWidth(100), marginTop: moderateScale(20)}}
+              onPressButton={this.onTryLRegister.bind(this)}>
+              <Text>Register</Text>
+            </Buttons>
+          </View>
+        </TouchableWithoutFeedback>
+        {this.state.isloading && loadingScreen()}
+      </SafeAreaView>
     );
   }
 }

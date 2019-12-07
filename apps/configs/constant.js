@@ -36,7 +36,7 @@ class Constants {
   //REST URL
   static REST = 'https://preview.digify.us/gifted/api/';
   //REST TIMEOUT
-  static TIME_OUT = 10000;
+  static TIME_OUT = 20000;
   //COMMAD
   static COMMAND_CARI = 1;
   static COMMAND_TAMBAH = 2;

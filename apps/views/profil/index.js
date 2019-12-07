@@ -6,8 +6,12 @@ import {
   Keyboard,
   Image,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
   TouchableHighlight,
+  Platform,
 } from 'react-native';
+import ImagePicker from 'react-native-image-picker';
+//
 import {styles, colors} from '../../styles';
 import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
@@ -27,6 +31,11 @@ import {callPost} from '../../services';
 import API from '../../services/common/api';
 import Constants from '../../configs/constant';
 let usermodal = MODAL.user;
+
+const options = {
+  title: 'Pilih Avatar/Foto Profil',
+};
+
 class ScreenProfile extends Component {
   constructor(props) {
     super(props);
@@ -35,6 +44,7 @@ class ScreenProfile extends Component {
       nametxt: '',
       phonetxt: '',
       addresstxt: '',
+      tempavatar: null,
     };
   }
   componentDidMount() {
@@ -101,118 +111,204 @@ class ScreenProfile extends Component {
       }
     }
   }
+  onUploadAvatar() {
+    /*
+     {
+            uri: source.uri,
+            type: source.type,
+            name: source.fileName
+        }*/
+    let bodyFormData = new FormData();
+    bodyFormData.append('avatar', {
+      uri: source.uri,
+      type: source.type,
+      name: source.fileName,
+    });
+    callPost(
+      API.UPLOAD_AVATAR,
+      bodyFormData,
+      (callbackUploadAvatar = res => {
+        console.log('callbackUploadAvatar => result', res);
+      }),
+    );
+  }
+  //
+  callPickerPhoto() {
+    ImagePicker.showImagePicker(options, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      } else {
+        const source = response;
+
+        // You can also display the image using data:
+        // const source = { uri: 'data:image/jpeg;base64,' + response.data };
+
+        this.setState({
+          tempavatar: source,
+        });
+      }
+    });
+  }
+  getFotoAvatar() {
+    if (this.props.user) {
+      return {uri: this.props.user.avatar};
+    } else if (this.state.tempavatar) {
+      return {uri: this.state.tempavatar.uri};
+    } else {
+      return require('../../assets/images/profilpicture.png');
+    }
+    /*
+     this.props.user.avatar
+                ? {uri: this.props.user.avatar}
+                : require('../../assets/images/profilpicture.png')
+    */
+  }
   //
   render() {
     return (
-      <View style={styles.container}>
-        <View
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : null}
+        style={{
+          flex: 1,
+          backgroundColor: colors.background.COLOR_PRIMARY_1,
+        }}>
+        <SafeAreaView style={styles.container}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={{flex: 1, justifyContent: 'flex-end'}}>
+              {this.addHeader()}
+              {this.addFotoProfil()}
+              <Forminput
+                stylecontainer={profilestyle.containerinput}
+                defaultText={this.state.nametxt}
+                onChangeText={this.onChangeNameInput}
+                styleinput={profilestyle.forminput}
+                title={'Nama'}
+              />
+              <Forminput
+                keyboardtype={'email-address'}
+                editable={false}
+                stylecontainer={profilestyle.containerinput}
+                defaultText={this.state.emailtxt}
+                onChangeText={this.onChangeEmailInput}
+                styleinput={profilestyle.forminput}
+                title={'Email'}
+              />
+              <Forminput
+                keyboardtype={'phone-pad'}
+                stylecontainer={profilestyle.containerinput}
+                defaultText={this.state.phonetxt}
+                onChangeText={this.onChangePhoneInput}
+                styleinput={profilestyle.forminput}
+                title={'No Hp'}
+              />
+              <Forminput
+                stylecontainer={profilestyle.containerinput}
+                defaultText={this.state.addresstxt}
+                onChangeText={this.onChangeAddressInput}
+                styleinput={profilestyle.forminput}
+                title={'Alamat'}
+              />
+
+              <View style={{flex: 1, borderWidth: 0}} />
+              {this.addFooter()}
+            </View>
+          </TouchableWithoutFeedback>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    );
+  }
+  //
+  addHeader() {
+    return (
+      <View
+        style={{
+          borderBottomWidth: 1,
+          paddingVertical: 15,
+          backgroundColor: colors.background.COLOR_PRIMARY_1,
+        }}>
+        <Text
           style={{
-            justifyContent: 'center',
-            borderBottomWidth: 1,
-            width: convertWidth(100),
-            height: moderateScale(60),
+            marginLeft: moderateScale(20),
+            fontSize: moderateScale(21),
           }}>
-          <Text
-            style={{
-              marginLeft: moderateScale(20),
-              fontSize: moderateScale(21),
-            }}>
-            {'Profil Saya'}
-          </Text>
+          {'Profil Saya'}
+        </Text>
+      </View>
+    );
+  }
+  //AVATAR
+  addFotoProfil() {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <View style={[styles.profilsize, {margin: 10}]}>
+          <Image
+            style={[
+              styles.profilsize,
+              {borderRadius: moderateScale(100), overflow: 'hidden'},
+            ]}
+            source={this.getFotoAvatar()}
+            resizeMode={'cover'}
+          />
         </View>
-        {
-          //AVATAR
-        }
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View style={[styles.profilsize, {margin: 10}]}>
-            <Image
-              style={[
-                styles.profilsize,
-                {borderRadius: moderateScale(100), overflow: 'hidden'},
-              ]}
-              source={
-                this.props.user.avatar
-                  ? {uri: this.props.user.avatar}
-                  : require('../../assets/images/profilpicture.png')
-              }
-              resizeMode={'cover'}
-            />
-          </View>
-          <TouchableHighlight>
-            <Text>Ubah Foto</Text>
-          </TouchableHighlight>
-        </View>
-        <KeyboardAvoidingView behavior="padding" style={{flex: 1}} enabled>
-          {
-            // DATA PROFIL FORM
-          }
-          <Forminput
-            stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-            defaultText={this.state.nametxt}
-            onChangeText={this.onChangeNameInput}
-            styleinput={{borderWidth: 1, paddingLeft: 10}}
-            title={'Nama'}
-          />
-          <Forminput
-            keyboardtype={'email-address'}
-            editable={false}
-            stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-            defaultText={this.state.emailtxt}
-            onChangeText={this.onChangeEmailInput}
-            styleinput={{borderWidth: 1, paddingLeft: 10}}
-            title={'Email'}
-          />
-          <Forminput
-            keyboardtype={'phone-pad'}
-            stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-            defaultText={this.state.phonetxt}
-            onChangeText={this.onChangePhoneInput}
-            styleinput={{borderWidth: 1, paddingLeft: 10}}
-            title={'No Hp'}
-          />
-          <Forminput
-            stylecontainer={{flex: 0, width: convertWidth(95), margin: 10}}
-            defaultText={this.state.addresstxt}
-            onChangeText={this.onChangeAddressInput}
-            styleinput={{borderWidth: 1, paddingLeft: 10}}
-            title={'Alamat'}
-          />
-        </KeyboardAvoidingView>
-        <View
-          style={{
-            //flex: 0.5,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            position: 'absolute',
-            bottom: 0,
-            borderTopWidth: 0.5,
-            borderBottomWidth: 0.5,
-            backgroundColor: colors.main.COLOR_PRIMARY_2,
-          }}>
-          <Buttons
-            style={{width: convertWidth(50), margin: 10}}
-            onPressButton={this.onTryUpdate.bind(this)}>
-            <Text>Save</Text>
-          </Buttons>
-          <Buttons
-            style={{width: convertWidth(50), margin: 10}}
-            onPressButton={this.onCancel.bind(this)}>
-            <Text>Cancel</Text>
-          </Buttons>
-        </View>
+        <TouchableHighlight
+          onPress={() => this.callPickerPhoto()}
+          underlayColor={colors.main.COLOR_PRIMARY_3}>
+          <Text>Ubah Foto</Text>
+        </TouchableHighlight>
+      </View>
+    );
+  }
+  addFooter() {
+    return (
+      <View
+        style={{
+          //flex: 0.5,
+          flexDirection: 'row',
+          justifyContent: 'space-around',
+          marginTop: 50,
+        }}>
+        <Buttons
+          style={{width: convertWidth(40)}}
+          onPressButton={this.onTryUpdate.bind(this)}>
+          <Text>Save</Text>
+        </Buttons>
+        <Buttons
+          style={{width: convertWidth(40)}}
+          onPressButton={this.onCancel.bind(this)}>
+          <Text>Cancel</Text>
+        </Buttons>
       </View>
     );
   }
 }
+const profilestyle = {
+  containerinput: {
+    flex: 0,
+    width: convertWidth(95),
+    height: 55,
+    margin: 10,
+  },
+  forminput: {
+    borderWidth: 1,
+    paddingLeft: 10,
+    height: 50,
+    borderRadius: 10,
+  },
+};
 function mapStateToProps(state) {
   return {
     friendlist: state.friendlist,
     user: state.user,
+    token: state.token,
   };
 }
 function dispatchToProps(dispatch) {

@@ -5,6 +5,7 @@ class ACTIONTYPE {
   static UPDATE_TOKEN = 'UPDATE_TOKEN';
   static UPDATE_KONTAKLIST = 'UPDATE_KONTAKLIST';
   static UPDATE_MODE = 'UPDATE_MODE';
+  static USER_LOGOUT = 'LOGOUT';
 }
 
 export default ACTIONTYPE;

@@ -1,13 +1,22 @@
 import React, {Component} from 'react';
-import {Alert, Dimensions, Vibration} from 'react-native';
+import {
+  View,
+  Alert,
+  Dimensions,
+  Vibration,
+  ActivityIndicator,
+} from 'react-native';
+
+import Tts from 'react-native-tts';
+import Toast from 'react-native-root-toast';
 import {
   heightPercentageToDP as sh,
   widthPercentageToDP as sw,
 } from 'react-native-responsive-screen';
-import {colors} from '../styles/colors';
+import {colors} from '../styles';
 import {moderateScale} from '../styles/scaling';
 import Constants from './constant';
-import Tts from 'react-native-tts';
+
 const vibrateduration = 1000;
 //validate email
 export function validateEmail(text) {
@@ -100,5 +109,32 @@ export function convertToArrayOfObjects(data) {
   }
 
   return output;
+}
+//--------------------------------------------------------------------------------------------
+//TOAST
+export function showToast(msg) {
+  return Toast.show(msg, {
+    duration: Toast.durations.SHORT,
+    position: Toast.positions.BOTTOM,
+    shadow: true,
+    animation: true,
+  });
+}
+//--------------------------------------------------------------------------------------------
+//SHOW LOADING
+export function loadingScreen() {
+  return (
+    <View
+      style={{
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        width: convertWidth(100),
+        height: convertHeight(100),
+      }}>
+      <ActivityIndicator color={colors.main.COLOR_PRIMARY_4} />
+    </View>
+  );
 }
 //--------------------------------------------------------------------------------------------

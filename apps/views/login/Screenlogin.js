@@ -7,7 +7,13 @@ import ACTION_TYPE from '../../redux/actions/actions';
 import {styles} from '../../styles';
 import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
-import {convertWidth, callAlert} from '../../configs/utils';
+import {
+  convertWidth,
+  callAlert,
+  showToast,
+  validateEmail,
+  loadingScreen,
+} from '../../configs/utils';
 import Forminput from '../../components/Forminput';
 import {callVibrate} from './../../configs/utils';
 import {postLogin, callPost} from '../../services';
@@ -22,6 +28,7 @@ class Screenlogin extends Component {
     this.state = {
       emailtxt: '',
       passwordtxt: '',
+      isloading: false,
     };
   }
   onChangeEmailInput = text => {
@@ -38,22 +45,35 @@ class Screenlogin extends Component {
     if (Constants.DEV_MODE) {
       return this.props.navigation.navigate('inappscreen');
     }
-
+    if (this.state.emailtxt.length < 1) {
+      return showToast('Mohon Isi Email');
+    }
+    if (this.state.passwordtxt.length < 1) {
+      return showToast('Mohon Isi Kata Sandi');
+    }
+    if (validateEmail(this.state.emailtxt) == false) {
+      return showToast('Format Email tidak sesuai');
+    }
+    this.setState({isloading: true});
     let bodyFormData = new FormData();
     bodyFormData.append('email', this.state.emailtxt);
     bodyFormData.append('password', this.state.passwordtxt);
     callPost(API.LOGIN, bodyFormData, this.callbacklogin.bind(this));
   }
   callbacklogin(res) {
+    this.setState({isloading: false});
     console.log(res);
     if (res) {
       if (res.error) {
         //callTo
-        callAlert(Constants.NAME_APPS, `${res.error}, Gagal Masuk`);
+        showToast(`${res.error}, Gagal Masuk`);
+        //callAlert(Constants.NAME_APPS, `${res.error}, Gagal Masuk`);
       } else if (res.success) {
         this.props.updatetoken(res.success.token);
         this.props.navigation.navigate('inappscreen');
       }
+    } else {
+      showToast('Gagal Login');
     }
   }
   //
@@ -101,6 +121,7 @@ class Screenlogin extends Component {
             <Text>Submit</Text>
           </Buttons>
         </View>
+        {this.state.isloading && loadingScreen()}
       </SafeAreaView>
     );
   }

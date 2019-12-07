@@ -17,6 +17,7 @@ import ACTION_TYPE from '../../redux/actions/actions';
 import API from '../../services/common/api';
 import {callPost} from '../../services';
 import Constants from '../../configs/constant';
+import {withNavigationFocus} from 'react-navigation';
 class KontakScreen extends Component {
   constructor(props) {
     super(props);
@@ -25,7 +26,9 @@ class KontakScreen extends Component {
     };
   }
   componentDidMount() {
-    this.getKontak();
+    this.focuslistener = this.props.navigation.addListener('didFocus', () => {
+      this.getKontak();
+    });
   }
   /** API */
   //get kontak
@@ -160,4 +163,7 @@ function dispatchToProps(dispatch) {
       }),
   };
 }
-export default connect(mapStateToProps, dispatchToProps)(KontakScreen);
+export default connect(
+  mapStateToProps,
+  dispatchToProps,
+)(withNavigationFocus(KontakScreen));
