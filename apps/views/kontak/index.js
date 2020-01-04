@@ -5,19 +5,28 @@ import {connect} from 'react-redux';
 import ACTION_TYPE from '../../redux/actions/actions';
 //
 import Buttons from '../../components/Buttons';
-import {convertWidth, callVibrate} from './../../configs/utils';
-import {styles} from '../../styles';
+import {
+  convertWidth,
+  callVibrate,
+  loadingScreen,
+  showToast,
+} from './../../configs/utils';
+import {styles, colors} from '../../styles';
 import {moderateScale} from '../../styles/scaling';
 import Forminput from '../../components/Forminput';
 import API from '../../services/common/api';
 import {callPost} from '../../services';
 import Constants from '../../configs/constant';
+import Icondelete from '../../assets/images/vector/deletes.svg';
+import Iconmarker from '../../assets/images/vector/markerpin.svg';
+
 class KontakDetailScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
       data: null,
       ismykontak: false,
+      isloading: false,
     };
   }
   componentDidMount() {
@@ -36,10 +45,8 @@ class KontakDetailScreen extends Component {
       case 'lokasi':
         this.openLokasi();
         break;
-      case 'ubah':
-        break;
       case 'hapus':
-        //this.props.navigation.navigate('carikontakscreen');
+        this.onDeleteKontak();
         break;
     }
   }
@@ -48,6 +55,7 @@ class KontakDetailScreen extends Component {
   getAddKontak() {
     console.log('kontak/index.js => getAddKontak() data ');
     //if (!data.latitude || !data.longitude) return;
+    this.setState({isloading: true});
     let bodyFormData = new FormData();
     bodyFormData.append('userid', this.state.data.id);
     Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
@@ -55,16 +63,51 @@ class KontakDetailScreen extends Component {
       API.ADD_FRIEND,
       bodyFormData,
       (callbackAddKontak = res => {
+        this.setState({isloading: false});
         console.log('kontak/index.js => callbackAddKontak() result ', res);
         if (res) {
           if (res.error) {
             //callTo
             //callAlert(Constants.NAME_APPS, `${res.error}`);
+            showToast(`${res.error}`);
           } else if (res.success) {
             //this.props.updateuser(res.success);
             //this.setState({datalist: res.success});
+            showToast('Berhasil Menambah Teman');
             this.onGoback();
           }
+        } else {
+          showToast('Gagal Menambah Teman');
+        }
+      }),
+    );
+  }
+  onDeleteKontak() {
+    console.log('kontak/index.js => onDeleteKontak() data ');
+    //if (!data.latitude || !data.longitude) return;
+    this.setState({isloading: true});
+    let bodyFormData = new FormData();
+    bodyFormData.append('userid', this.state.data.id);
+    Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
+    callPost(
+      API.DELETE_FRIEND,
+      bodyFormData,
+      (callbackDeleteKontak = res => {
+        this.setState({isloading: false});
+        console.log('kontak/index.js => callbackDeleteKontak() result ', res);
+        if (res) {
+          if (res.error) {
+            //callTo
+            //callAlert(Constants.NAME_APPS, `${res.error}`);
+            showToast(`${res.error}`);
+          } else if (res.success) {
+            //this.props.updateuser(res.success);
+            //this.setState({datalist: res.success});
+            showToast('Berhasil Menghapus Teman');
+            this.onGoback();
+          }
+        } else {
+          showToast('Gagal Menghapus Teman');
         }
       }),
     );
@@ -79,6 +122,12 @@ class KontakDetailScreen extends Component {
     if (!data) {
       return;
     }
+    if (!data.lat || !data.long) {
+      return showToast('Tidak ada lokasi terakhir teman');
+    }
+    callVibrate();
+    this.props.updateTarget(data);
+    this.props.screenProps.navigation.navigate('tabs');
   }
   //
   render() {
@@ -141,13 +190,14 @@ class KontakDetailScreen extends Component {
           {ismykontak == true && this.btnTeman()}
           {ismykontak == false && this.tambahTeman()}
         </View>
-        <View style={{flex: 0.5}}>
+        <View style={{position: 'absolute', bottom: 0}}>
           <Buttons
-            style={{margin: 10, width: convertWidth(95)}}
+            style={{width: convertWidth(100), paddingVertical: 10}}
             onPressButton={() => this.onGoback()}>
             <Text>Kembali</Text>
           </Buttons>
         </View>
+        {this.state.isloading && loadingScreen()}
       </View>
     );
   }
@@ -162,25 +212,36 @@ class KontakDetailScreen extends Component {
   }
   btnTeman() {
     return (
-      <View>
+      <View style={{alignItems: 'center', flex: 1}}>
         <Buttons
           style={{
             margin: 10,
             width: convertWidth(50),
             height: moderateScale(80),
+            borderRadius: 10,
           }}
           onPressButton={() => this.onEventClick('lokasi')}>
-          <Text>{'Lokasi\nKontak'}</Text>
+          <View style={{alignItems: 'center'}}>
+            <Iconmarker
+              width={moderateScale(25)}
+              height={moderateScale(25)}
+              fill={colors.main.COLOR_PRIMARY_5}
+            />
+            <Text>{'Lokasi Kontak'}</Text>
+          </View>
         </Buttons>
+
         <Buttons
-          style={{margin: 10, width: convertWidth(95)}}
-          onPressButton={() => this.onEventClick('ubah')}>
-          <Text>Ubah Kontak</Text>
-        </Buttons>
-        <Buttons
-          style={{margin: 10, width: convertWidth(95)}}
+          style={{
+            margin: 10,
+            width: convertWidth(95),
+            height: moderateScale(50),
+          }}
           onPressButton={() => this.onEventClick('hapus')}>
-          <Text>Hapus Kontak</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Icondelete width={moderateScale(25)} height={moderateScale(25)} />
+            <Text>Hapus Kontak</Text>
+          </View>
         </Buttons>
       </View>
     );

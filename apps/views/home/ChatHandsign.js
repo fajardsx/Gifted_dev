@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   Image,
 } from 'react-native';
-import {styles} from '../../styles';
+import {styles, fonts} from '../../styles';
 import Modal from 'react-native-modal';
 
 //REDUX
@@ -32,7 +32,7 @@ import Constants from '../../configs/constant';
 import API from '../../services/common/api';
 import {callPost} from '../../services';
 const iconSize = moderateScale(40);
-class CariKontakScreen extends PureComponent {
+class ChatScreen extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -55,24 +55,12 @@ class CariKontakScreen extends PureComponent {
   //   }
   //Callback
   onCallbackResult(data) {
-    this.setState({datalist: []});
-    let dataSplit = data.split(' ');
-    console.log('home/index.js => oncallbackResult ', dataSplit);
-    dataSplit.map((res, index) => {
-      console.log(
-        'home/index.js => oncallbackResult findCommad ',
-        findCommad(res),
-      );
-      if (findCommad(res) == Constants.COMMAND_CARI) {
-        this.setState(
-          {
-            searchtxt: dataSplit[index + 1] ? dataSplit[index + 1] : '',
-          },
-          () => {
-            this.processSearch();
-          },
-        );
-      }
+    this.setState({datalist: []}, () => {
+      //let dataSplit = data.split(' ');
+      console.log('hChathansign.js => oncallbackResult ', data);
+      let tmpList = Object.assign([], this.state.datalist);
+      tmpList.push({result: data});
+      this.setState({datalist: tmpList});
     });
   }
   /** API */
@@ -119,82 +107,41 @@ class CariKontakScreen extends PureComponent {
   processSearch() {
     const {searchtxt, data} = this.state;
     this.getFindKontak();
-    // console.log('data', this.props.friendlist);
-    // if (searchtxt.length < 1) {
-    //   return this.setState({
-    //     datalist: [],
-    //   });
-    // }
-    // let listname = '';
-    // let resultSearch = this.props.friendlist.filter(res => {
-    //   let resData = '';
-    //   // let keyCity = res.city_name ? res.city_name.toUpperCase() : '';
-    //   let keyName = res.nama ? res.nama.toUpperCase() : '';
-    //   console.log('processSearch() => res', res);
-    //   console.log('processSearch() => searchtxt', searchtxt);
-    //   resData = `${keyName} `;
-    //   listname += resData;
-    //   const textData = searchtxt.toUpperCase();
-    //   return resData.indexOf(textData) > -1;
-    // });
-    // console.log('processSearch() => data', resultSearch);
-    // this.setState(
-    //   {
-    //     datalist: resultSearch,
-    //   },
-    //   () => {
-    //     if (resultSearch.length < 1) {
-    //       onCallTTS(`Lokasi ${this.state.searchtxt} tidak ditemukan`);
-    //     } else if (resultSearch.length == 1) {
-    //       onCallTTS(`Lokasi ${listname[0]} ditemukan`);
-    //     } else if (resultSearch.length > 1) {
-    //       onCallTTS(`pencarian ditemukan dengan nama ${listname}`);
-    //     }
-    //   },
-    // );
-    //that.filterLocation(resultSearch)
   }
   //
   onSelectFriend(item) {
     console.log('processSearch() => onSelectFriend', item);
-    this.props.navigation.navigate('detailkontakscreen', {
-      datas: item,
-      ismykontak: false,
-    });
-    //this.props.updateTarget(item);
-    //this.props.navigation.state.params.functOnProcess();
-    //this.props.navigation.goBack();
   }
   //RENDER
   render() {
     //const {permissiongrand} = this.state;
     return (
       <SafeAreaView style={styles.containerDimension}>
-        <View
-          style={{
-            justifyContent: 'center',
-            borderBottomWidth: 1,
-            width: convertWidth(100),
-            height: moderateScale(60),
-          }}>
-          <Text
-            style={{
-              marginLeft: moderateScale(20),
-              fontSize: moderateScale(21),
-            }}>
-            {'Cari Teman'}
-          </Text>
-        </View>
         <View style={{flex: 1, backgroundColor: '#fff', alignItems: 'center'}}>
-          <View style={{paddingVertical: 10}} />
+          {
+            <FlatList
+              style={{
+                //paddingVertical: 10,
+
+                width: moderateScale(350),
+                //borderWidth: 1,
+              }}
+              extraData={this.state}
+              data={this.state.datalist}
+              keyExtractor={(item, index) => {
+                return index.toString();
+              }}
+              renderItem={this.celllist}
+            />
+          }
           <View
             style={{
               flexDirection: 'row',
               borderWidth: 1,
               borderColor: '#dedcd7',
-              borderRadius: 25,
+              borderRadius: 10,
               //backgroundColor: '#ededed',
-              width: convertWidth(80),
+              width: convertWidth(95),
               height: convertWidth(10),
               //justifyContent: 'center',
               alignItems: 'center',
@@ -209,7 +156,7 @@ class CariKontakScreen extends PureComponent {
                   marginLeft: 10,
                   color: '#000',
                   fontSize: moderateScale(15),
-                  width: convertWidth(65),
+                  width: convertWidth(80),
                   height: moderateScale(40),
                 },
               ]}
@@ -218,17 +165,6 @@ class CariKontakScreen extends PureComponent {
             />
             <IconSearch height={moderateScale(15)} width={moderateScale(15)} />
           </View>
-          {this.state.datalist.length > 0 && (
-            <FlatList
-              style={{paddingVertical: 10}}
-              extraData={this.state}
-              data={this.state.datalist}
-              keyExtractor={(item, index) => {
-                return index.toString();
-              }}
-              renderItem={this.celllist}
-            />
-          )}
           {this.state.datalist.length == 0 && this.state.searchtxt.length > 2 && (
             <View
               style={{
@@ -244,10 +180,11 @@ class CariKontakScreen extends PureComponent {
 
           <VoicesComponent
             onCallback={this.onCallbackResult.bind(this)}
-            label={'Cari\nTeman'}
+            label={'Sebutkan\nKata'}
+            tts={'Sebutkan Kata'}
             style={{
               //bottom: 0,
-              top: '60%',
+              bottom: '35%',
               left: '30%',
             }}
           />
@@ -262,27 +199,19 @@ class CariKontakScreen extends PureComponent {
         borderWidth: 1,
         width: convertWidth(90),
         minHeight: moderateScale(40),
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderRadius: 10,
+        //flexDirection: 'row',
+        //alignItems: 'center',
+        borderRadius: 5,
         marginBottom: 5,
         paddingVertical: moderateScale(10),
       }}>
-      <View style={[styles.cellprofilsize, {marginHorizontal: 10}]}>
-        <Image
-          style={[
-            styles.cellprofilsize,
-            {borderRadius: moderateScale(100), overflow: 'hidden'},
-          ]}
-          source={
-            item.avatar
-              ? {uri: item.avatar}
-              : require('../../assets/images/profilpicture.png')
-          }
-          resizeMode={'cover'}
-        />
-      </View>
-      <Text>{item.name}</Text>
+      <Text style={{marginLeft: 10, fontSize: 20}}>
+        {item ? item.result : ''}
+      </Text>
+      <Text
+        style={{marginLeft: 10, fontSize: 50, fontFamily: fonts.FONT_PRIMARY}}>
+        {item ? item.result : ''}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -307,4 +236,4 @@ function dispatchToProps(dispatch) {
       }),
   };
 }
-export default connect(mapStateToProps, dispatchToProps)(CariKontakScreen);
+export default connect(mapStateToProps, dispatchToProps)(ChatScreen);

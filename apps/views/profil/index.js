@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import ImagePicker from 'react-native-image-picker';
 //
-import {styles, colors} from '../../styles';
+import {styles, colors, fonts} from '../../styles';
 import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
 import {
@@ -21,6 +21,8 @@ import {
   callAlert,
   validateEmail,
   convertHeight,
+  showToast,
+  loadingScreen,
 } from '../../configs/utils';
 import Forminput from '../../components/Forminput';
 //REDUX
@@ -39,12 +41,14 @@ const options = {
 class ScreenProfile extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
       emailtxt: '',
       nametxt: '',
       phonetxt: '',
       addresstxt: '',
       tempavatar: null,
+      isloading: false,
     };
   }
   componentDidMount() {
@@ -71,6 +75,13 @@ class ScreenProfile extends Component {
   onCancel() {
     this.props.navigation.goBack();
   }
+  onCallSave() {
+    if (this.state.tempavatar) {
+      this.onUploadAvatar();
+    } else {
+      this.onTryUpdate();
+    }
+  }
   onTryUpdate() {
     // console.log('screenlogin', this.state.emailtxt);
     // console.log('screenlogin', this.state.passwordtxt);
@@ -84,7 +95,7 @@ class ScreenProfile extends Component {
 
     if (validateEmail(this.state.emailtxt) == false)
       return callAlert(Constants.NAME_APPS, 'Format Email Tidak Sesuai');
-
+    this.setState({isloading: true});
     callVibrate();
 
     let bodyFormData = new FormData();
@@ -96,19 +107,24 @@ class ScreenProfile extends Component {
   }
   callbackupdate(res) {
     console.log(res);
+    this.setState({isloading: false});
     if (res) {
       if (res.error) {
-        callAlert(Constants.NAME_APPS, `${res.error}`);
+        //callAlert(Constants.NAME_APPS, `${res.error}`);
+        showToast(`${res.error}`);
         //callTo
       } else if (res.success) {
         this.props.updateuser(res.success);
         //this.props.updatetoken(res.success.token);
+        showToast('Berhasil Ubah Data Profil');
         let delay = setTimeout(() => {
           // this.props.navigation.navigate('inappscreen');
           this.props.navigation.goBack();
           clearTimeout(delay);
         }, 2000);
       }
+    } else {
+      showToast('Gagal Ubah Foto Profil');
     }
   }
   onUploadAvatar() {
@@ -118,17 +134,26 @@ class ScreenProfile extends Component {
             type: source.type,
             name: source.fileName
         }*/
+    this.setState({isloading: true});
     let bodyFormData = new FormData();
     bodyFormData.append('avatar', {
-      uri: source.uri,
-      type: source.type,
-      name: source.fileName,
+      uri: this.state.tempavatar.uri,
+      type: this.state.tempavatar.type,
+      name: this.state.tempavatar.fileName,
     });
     callPost(
       API.UPLOAD_AVATAR,
       bodyFormData,
       (callbackUploadAvatar = res => {
         console.log('callbackUploadAvatar => result', res);
+        this.setState({isloading: false});
+        if (res) {
+          if (res.success) {
+            this.onTryUpdate();
+          }
+        } else {
+          showToast('Gagal Ubah Foto Profil');
+        }
       }),
     );
   }
@@ -143,7 +168,7 @@ class ScreenProfile extends Component {
         console.log('User tapped custom button: ', response.customButton);
       } else {
         const source = response;
-
+        console.log('Source : ', source);
         // You can also display the image using data:
         // const source = { uri: 'data:image/jpeg;base64,' + response.data };
 
@@ -154,7 +179,7 @@ class ScreenProfile extends Component {
     });
   }
   getFotoAvatar() {
-    if (this.props.user) {
+    if (this.props.user && this.state.tempavatar == null) {
       return {uri: this.props.user.avatar};
     } else if (this.state.tempavatar) {
       return {uri: this.state.tempavatar.uri};
@@ -166,6 +191,12 @@ class ScreenProfile extends Component {
                 ? {uri: this.props.user.avatar}
                 : require('../../assets/images/profilpicture.png')
     */
+  }
+  //
+  onCallLogout() {
+    this.props.onlogout();
+    this.props.navigation.navigate('titlescreen');
+    showToast('Berhasil Logout');
   }
   //
   render() {
@@ -213,11 +244,43 @@ class ScreenProfile extends Component {
                 title={'Alamat'}
               />
 
-              <View style={{flex: 1, borderWidth: 0}} />
-              {this.addFooter()}
+              <View
+                style={{
+                  flex: 1,
+                  borderWidth: 0,
+                  alignItems: 'center',
+                  justifyContent: 'space-around',
+                }}>
+                <Buttons
+                  style={{
+                    marginTop: 30,
+                    marginHorizontal: 10,
+                    width: convertWidth(30),
+                    borderRadius: 5,
+                    elevation: 1,
+                  }}
+                  onPressButton={this.onCallLogout.bind(this)}>
+                  <View>
+                    <Text>Keluar Akun</Text>
+                    {this.props.appmode == 1 && (
+                      <Text
+                        style={{
+                          //color: colors.main.COLOR_PRIMARY_1,
+                          borderWidth: 0,
+                          fontSize: moderateScale(25),
+                          fontFamily: fonts.FONT_PRIMARY,
+                        }}>
+                        {'Keluar Akun'}
+                      </Text>
+                    )}
+                  </View>
+                </Buttons>
+                {this.addFooter()}
+              </View>
             </View>
           </TouchableWithoutFeedback>
         </SafeAreaView>
+        {this.state.isloading && loadingScreen()}
       </KeyboardAvoidingView>
     );
   }
@@ -261,8 +324,33 @@ class ScreenProfile extends Component {
         </View>
         <TouchableHighlight
           onPress={() => this.callPickerPhoto()}
+          style={{
+            backgroundColor: colors.main.COLOR_PRIMARY_4,
+            paddingVertical: 5,
+            paddingHorizontal: 10,
+            borderRadius: 10,
+          }}
           underlayColor={colors.main.COLOR_PRIMARY_3}>
-          <Text>Ubah Foto</Text>
+          <View style={{justifyContent: 'center'}}>
+            <Text
+              style={{
+                color: colors.main.COLOR_PRIMARY_1,
+                fontSize: moderateScale(15),
+              }}>
+              Ubah Foto
+            </Text>
+            {this.props.appmode == 1 && (
+              <Text
+                style={{
+                  color: colors.main.COLOR_PRIMARY_1,
+                  borderWidth: 0,
+                  fontSize: moderateScale(25),
+                  fontFamily: fonts.FONT_PRIMARY,
+                }}>
+                {'Ubah Foto'}
+              </Text>
+            )}
+          </View>
         </TouchableHighlight>
       </View>
     );
@@ -272,19 +360,39 @@ class ScreenProfile extends Component {
       <View
         style={{
           //flex: 0.5,
+          width: convertWidth(100),
           flexDirection: 'row',
           justifyContent: 'space-around',
-          marginTop: 50,
         }}>
         <Buttons
           style={{width: convertWidth(40)}}
-          onPressButton={this.onTryUpdate.bind(this)}>
-          <Text>Save</Text>
+          onPressButton={this.onCallSave.bind(this)}>
+          <Text>Simpan</Text>
+          {this.props.appmode == 1 && (
+            <Text
+              style={{
+                borderWidth: 0,
+                fontSize: moderateScale(25),
+                fontFamily: fonts.FONT_PRIMARY,
+              }}>
+              {'Simpan'}
+            </Text>
+          )}
         </Buttons>
         <Buttons
           style={{width: convertWidth(40)}}
           onPressButton={this.onCancel.bind(this)}>
-          <Text>Cancel</Text>
+          <Text>Batal</Text>
+          {this.props.appmode == 1 && (
+            <Text
+              style={{
+                borderWidth: 0,
+                fontSize: moderateScale(25),
+                fontFamily: fonts.FONT_PRIMARY,
+              }}>
+              {'Batal'}
+            </Text>
+          )}
         </Buttons>
       </View>
     );
@@ -309,6 +417,7 @@ function mapStateToProps(state) {
     friendlist: state.friendlist,
     user: state.user,
     token: state.token,
+    appmode: state.appmode,
   };
 }
 function dispatchToProps(dispatch) {
@@ -322,6 +431,10 @@ function dispatchToProps(dispatch) {
       dispatch({
         type: ACTION_TYPE.UPDATE_USER,
         value: data,
+      }),
+    onlogout: () =>
+      dispatch({
+        type: ACTION_TYPE.USER_LOGOUT,
       }),
   };
 }

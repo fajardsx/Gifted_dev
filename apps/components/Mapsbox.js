@@ -2,8 +2,7 @@ import React, {Component} from 'react';
 import {Text, View, Alert, Image} from 'react-native';
 //Third
 import Geolocation from 'react-native-geolocation-service';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
-import Polyline from '@mapbox/polyline';
+import getDirections from 'react-native-google-maps-directions';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 import {lineString as makeLineString} from '@turf/helpers';
 import findDistance from '@turf/distance';
@@ -70,6 +69,25 @@ class MapsBoxComponent extends Component {
     this.onReqUserLocation();
     //this.getInfoUserTrackingMode();
     MapboxGL.setTelemetryEnabled(false);
+
+    //TRACKING
+    this.userposition = Geolocation.watchPosition(position => {
+      const lastposition = position;
+      console.log('MapBox.js => userposition', lastposition);
+      let trackingposition = Object.assign([], this.state.trackingposition);
+      let data = {
+        latitude: lastposition.coords.latitude,
+        longitude: lastposition.coords.longitude,
+      };
+      trackingposition.push({
+        longitude: lastposition.coords.longitude,
+        latitude: lastposition.coords.latitude,
+      });
+
+      this.setState({trackingposition}, () => {
+        this.props.onUpdate(data);
+      });
+    });
   }
   //RECEIVED UPDATE PROPS
   static getDerivedStateFromProps(props, state) {
@@ -84,20 +102,46 @@ class MapsBoxComponent extends Component {
   }
   //START NAVIGATE
   onStart() {
+    const {target} = this.state;
+    const {users} = this.props;
     console.log('mapsbox.js => onStart');
+    console.log('mapsbox.js => user ', users);
+    console.log('mapsbox.js => target ', target);
     callVibrate();
     onCallTTS('Memulai Navigasi');
-    const routeSimulator = new RouteSimulator(this.state.direction);
-    routeSimulator.addListener(currentpoint => this.setState({currentpoint}));
-    routeSimulator.start();
-    this.setState(
-      {
-        routeSimulator,
+    // const routeSimulator = new RouteSimulator(this.state.direction);
+    // routeSimulator.addListener(currentpoint => this.setState({currentpoint}));
+    // routeSimulator.start();
+    // this.setState(
+    //   {
+    //     routeSimulator,
+    //   },
+    //   () => {
+    //     this.onTrackingChange(MapboxGL.UserTrackingModes.FollowWithHeading);
+    //   },
+    // );
+    //WITH GOOGLE APPS
+    const data = {
+      source: {
+        latitude: parseFloat(users.lat),
+        longitude: parseFloat(users.long),
       },
-      () => {
-        this.onTrackingChange(MapboxGL.UserTrackingModes.FollowWithHeading);
+      destination: {
+        latitude: parseFloat(target.lat),
+        longitude: parseFloat(target.long),
       },
-    );
+      params: [
+        {
+          key: 'travelmode',
+          value: 'walking', // may be "walking", "bicycling" or "transit" as well
+        },
+        {
+          key: 'dir_action',
+          value: 'navigate', // this instantly initializes navigation using the given travel mode
+        },
+      ],
+    };
+    getDirections(data);
   }
   onStop() {
     if (this.state.routeSimulator) {
@@ -137,10 +181,14 @@ class MapsBoxComponent extends Component {
             },
             () => {
               //this.onGetDirection();
+              this.props.onUpdate({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              });
             },
           ),
         error => {
-          console.log('error', error);
+          console.log('error ReqCurrentLocation', error);
           //this.onReqUserLocation();
         },
         {
@@ -267,7 +315,7 @@ class MapsBoxComponent extends Component {
               followUserMode={
                 userSelectedUserTrackingMode != 'none'
                   ? userSelectedUserTrackingMode
-                  : 'normal'
+                  : MapboxGL.UserTrackingModes.Follow
               }
               onUserTrackingModeChange={this.onTrackChange.bind(this)}
             />
@@ -275,7 +323,7 @@ class MapsBoxComponent extends Component {
             {this.renderLine()}
             {this.renderCurrentPoint()}
             {this.renderProgressLine()}
-            {this.renderUserAnnotation()}
+            {this.renderUserLocation()}
             {target && (
               <MapboxGL.ShapeSource
                 id="destination"
@@ -338,6 +386,10 @@ class MapsBoxComponent extends Component {
         <MapboxGL.Callout title="Your Here!" />
       </MapboxGL.PointAnnotation>
     );
+  }
+  renderUserLocation() {
+    const {latitude, longitude} = this.state;
+    return <MapboxGL.UserLocation key="userLocation" id="userLocation" />;
   }
   //RENDER LINE ROUTE
   renderLine() {
@@ -495,15 +547,23 @@ class MapsBoxComponent extends Component {
   }
   onUserLocationUpdate(location) {
     console.log('mapsbox.js => onUserLocationUpdate', location);
-    this.setState({
-      timestamp: location.timestamp,
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      altitude: location.coords.altitude,
-      heading: location.coords.heading,
-      accuracy: location.coords.accuracy,
-      speed: location.coords.speed,
-    });
+    this.setState(
+      {
+        timestamp: location.timestamp,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        altitude: location.coords.altitude,
+        heading: location.coords.heading,
+        accuracy: location.coords.accuracy,
+        speed: location.coords.speed,
+      },
+      () => {
+        this.props.onUpdate({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      },
+    );
   }
 
   //COMMAND
@@ -581,6 +641,7 @@ const layerStyles = {
 function mapStateToProps(state) {
   return {
     friendlist: state.friendlist,
+    friendtarget: state.currentFriendTarget,
     users: state.user,
   };
 }

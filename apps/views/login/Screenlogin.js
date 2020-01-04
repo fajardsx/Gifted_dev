@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
-import {View, Text, Image} from 'react-native';
+import {View, Text, Image, TouchableOpacity} from 'react-native';
 //REDUX
 import {connect} from 'react-redux';
 import ACTION_TYPE from '../../redux/actions/actions';
 //
-import {styles} from '../../styles';
+import {styles, colors} from '../../styles';
 import Buttons from '../../components/Buttons';
 import {moderateScale} from '../../styles/scaling';
 import {
@@ -19,7 +19,6 @@ import {callVibrate} from './../../configs/utils';
 import {postLogin, callPost} from '../../services';
 import API from '../../services/common/api';
 import Constants from '../../configs/constant';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import SafeAreaView from 'react-native-safe-area-view';
 
 class Screenlogin extends Component {
@@ -77,6 +76,7 @@ class Screenlogin extends Component {
     }
   }
   //
+  //
   render() {
     return (
       <SafeAreaView style={styles.container}>
@@ -108,7 +108,13 @@ class Screenlogin extends Component {
             styleinput={{borderBottomWidth: 1}}
             title={'Password'}
           />
-          <TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.main.COLOR_PRIMARY_1,
+              paddingHorizontal: moderateScale(20),
+              paddingVertical: moderateScale(10),
+            }}
+            onPress={() => this.props.navigation.navigate('forgotscreen')}>
             <Text>Lupa Password</Text>
           </TouchableOpacity>
           <Buttons

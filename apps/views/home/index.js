@@ -28,7 +28,9 @@ import SearchResulthScreen from './searchresultscreen';
 import {withNavigationFocus} from 'react-navigation';
 import {callPost} from '../../services';
 import API from '../../services/common/api';
-const iconSize = moderateScale(40);
+import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
+import ChatHandsign from './ChatHandsign';
+const iconSize = moderateScale(30);
 
 let context = null;
 class HomeScreen extends Component {
@@ -41,6 +43,11 @@ class HomeScreen extends Component {
       searchEnable: true,
       resultSearch: false,
       isnavi: false,
+      index: 0,
+      routes: [
+        {key: 'first', title: 'Peta'},
+        {key: 'second', title: 'Handsign'},
+      ],
     };
     context = this;
     //this.mapboxs = React.createRef();
@@ -58,6 +65,10 @@ class HomeScreen extends Component {
   componentWillUnmount() {
     console.log('home/index.js => Destroy');
   }
+  //HandleIndexChange
+  handleIndexChange = index => {
+    this.setState({index});
+  };
   //PROCESS NAVI
   onPressCell(item) {
     callVibrate();
@@ -156,25 +167,22 @@ class HomeScreen extends Component {
     bodyFormData.append('long', 0);
     //if (!data.latitude || !data.longitude) return;
     Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
-    callPost(
-      API.GET_PROFILE,
-      bodyFormData,
-      (callbackProfile = res => {
-        console.log('home/index.js => callbackProfile() result ', res);
-        if (res) {
-          if (res.error) {
-            //callTo
-            callAlert(
-              Constants.NAME_APPS,
-              `${res.error}, Gagal Menghubungi Server`,
-            );
-          } else if (res.success) {
-            this.props.updateuser(res.success);
-            this.getKontak();
-          }
-        }
-      }),
-    );
+    callPost(API.GET_PROFILE, bodyFormData, this.callbackProfile.bind(this));
+  }
+  callbackProfile(res) {
+    console.log('home/index.js => callbackProfile() result ', res);
+    if (res) {
+      if (res.error) {
+        //callTo
+        callAlert(
+          Constants.NAME_APPS,
+          `${res.error}, Gagal Menghubungi Server`,
+        );
+      } else if (res.success) {
+        this.props.updateuser(res.success);
+        this.getKontak();
+      }
+    }
   }
   //get kontak
   getKontak() {
@@ -211,6 +219,10 @@ class HomeScreen extends Component {
     bodyFormData.append('lat', data.latitude);
     bodyFormData.append('long', data.longitude);
     if (!data.latitude || !data.longitude) return;
+    let tempdata = Object.assign([], this.props.user);
+    tempdata.lat = data.latitude;
+    tempdata.long = data.longitude;
+    this.props.updateuser(tempdata);
     Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
     callPost(
       API.UPDATE_LOCATION,
@@ -231,38 +243,48 @@ class HomeScreen extends Component {
   //
   //=============================RENDER==========================================
   render() {
-    const {permissiongrand, searchEnable, isnavi} = this.state;
+    const {permissiongrand, searchEnable, index} = this.state;
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         {this.headerHome()}
-        {permissiongrand == true && (
-          <MapsBoxComponent
-            ref={this.mapboxs}
-            target={this.props.friendtarget}
-            onCancel={this.onCancelPress.bind(this)}
-            isnavi={isnavi}
-            onUpdate={this.postUpdatePosition.bind(this)}
-          />
-        )}
-        {/* {permissiongrand == true && (
-          <MapsComponent
-            ref={this.mapboxs}
-            target={this.props.friendtarget}
-            onCancel={this.onCancelPress.bind(this)}
-            isnavi={isnavi}
-            onUpdate={this.postUpdatePosition.bind(this)}
-          />
-        )} */}
-        {searchEnable && this.props.friendtarget == null && (
+        <TabView
+          renderTabBar={props => (
+            <TabBar
+              {...props}
+              indicatorStyle={{
+                backgroundColor: colors.tabsstyle.COLOR_PRIMARY_1,
+              }}
+              style={{backgroundColor: colors.tabsstyle.COLOR_PRIMARY_3}}
+              renderLabel={({route, focused, color}) => (
+                <Text
+                  style={{
+                    fontSize: moderateScale(15),
+                    color:
+                      focused == true
+                        ? colors.tabsstyle.COLOR_PRIMARY_1
+                        : colors.tabsstyle.COLOR_PRIMARY_2,
+                    margin: 8,
+                  }}>
+                  {route.title}
+                </Text>
+              )}
+            />
+          )}
+          navigationState={this.state}
+          renderScene={SceneMap({first: this.sceneMap, second: this.sceneChat})}
+          onIndexChange={this.handleIndexChange}
+          initialLayout={{width: convertWidth(100), height: 200}}
+        />
+        {searchEnable && this.props.friendtarget == null && index == 0 && (
           <VoicesComponent
             ref={c => (this.voices = c)}
             {...this.props}
             onCallback={this.onCallbackResult.bind(this)}
             onProcess={this.onProcessDirection.bind(this)}
-            style={{position: 'absolute'}}
+            style={{position: 'absolute', left: convertWidth(30)}}
           />
         )}
-      </SafeAreaView>
+      </View>
     );
   }
   headerHome() {
@@ -373,8 +395,43 @@ class HomeScreen extends Component {
       </View>
     );
   }
+
+  sceneMap = () => (
+    <MapsComponent
+      ref={this.mapboxs}
+      target={this.props.friendtarget}
+      onCancel={this.onCancelPress.bind(this)}
+      isnavi={this.state.isnavi}
+      onUpdate={this.postUpdatePosition.bind(this)}
+    />
+  );
+  sceneChat = () => (
+    <ChatHandsign
+      onCancel={this.onCancelPress.bind(this)}
+      isnavi={this.state.isnavi}
+      onUpdate={this.postUpdatePosition.bind(this)}
+    />
+  );
   //modal search
   modalSearch() {}
+}
+const FirstRoute = () => (
+  <View style={[{flex: 1, backgroundColor: '#ff4081'}]} />
+);
+
+const SecondRoute = () => (
+  <View style={[{flex: 1, backgroundColor: '#673ab7'}]} />
+);
+{
+  /* {permissiongrand == true && (
+          <MapsBoxComponent
+            ref={this.mapboxs}
+            target={this.props.friendtarget}
+            onCancel={this.onCancelPress.bind(this)}
+            isnavi={isnavi}
+            onUpdate={this.postUpdatePosition.bind(this)}
+          />
+        )} */
 }
 
 function mapStateToProps(state) {

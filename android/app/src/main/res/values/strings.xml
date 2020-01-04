@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Gifted</string>
     <string name="map_key">AIzaSyB59mUBsxpjXDZZJm0lFzN_hp8nN2w0-6o</string>
+    <string name="mapbox_access_token">pk.eyJ1IjoiZmFqYXJkc3giLCJhIjoiY2p1c202b3VpNDg3MjQzbnEydmV5bGJmNCJ9.rcCsymvwj6ubuu6gqUPJ5Q</string>
 </resources>

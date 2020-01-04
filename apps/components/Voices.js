@@ -3,6 +3,8 @@ import {View, Text, ScrollView} from 'react-native';
 //third
 import Voices from 'react-native-voice';
 import Tts from 'react-native-tts';
+//REDUX
+import {connect} from 'react-redux';
 //local
 import Constants from '../configs/constant';
 import Buttons from '../components/Buttons';
@@ -17,7 +19,7 @@ import {moderateScale} from '../styles/scaling';
 import IconMic from '../assets/images/vector/microphone.svg';
 
 const iconsize = moderateScale(30);
-export default class VoicesComponent extends PureComponent {
+class VoicesComponent extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -106,7 +108,7 @@ export default class VoicesComponent extends PureComponent {
         functOnProcess: () => this.props.onProcess(),
       });
     }
-    this.thisCallTTS('Cari Lokasi');
+    this.thisCallTTS(this.props.tts ? this.props.tts : 'Cari Lokasi');
     let timeStart = setTimeout(async () => {
       this.setState({
         recognized: '',
@@ -134,8 +136,8 @@ export default class VoicesComponent extends PureComponent {
         style={[
           {
             position: 'absolute',
-            top: convertHeight(50),
-            left: convertWidth(30),
+            bottom: convertHeight(5),
+            left: convertWidth(20),
             borderRadius: 5,
             overflow: 'hidden',
             borderWidth: 1,
@@ -147,15 +149,29 @@ export default class VoicesComponent extends PureComponent {
         {isStart === false && (
           <Buttons
             style={{
+              padding: 10,
               backgroundColor: '#f0f0f0',
-              width: convertWidth(40),
+              width: convertWidth(35),
               height: convertHeight(15),
             }}
             onPressButton={this.onStartRecognition.bind(this)}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{borderWidth: 0}}>
-                {this.props.label ? this.props.label : 'Cari\nLokasi'}
-              </Text>
+            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{justifyContent: 'center', alignItems: 'center'}}>
+                <Text style={{borderWidth: 0, textAlign: 'center'}}>
+                  {this.props.label ? this.props.label : 'Cari Lokasi'}
+                </Text>
+                {this.props.appmode == 1 && (
+                  <Text
+                    style={{
+                      borderWidth: 0,
+                      fontSize: moderateScale(25),
+                      fontFamily: fonts.FONT_PRIMARY,
+                    }}>
+                    {this.props.label ? this.props.label : 'Cari\nLokasi'}
+                  </Text>
+                )}
+              </View>
+
               <IconMic height={iconsize} width={iconsize} />
             </View>
           </Buttons>
@@ -171,9 +187,28 @@ export default class VoicesComponent extends PureComponent {
             }}>
             <IconMic height={iconsize * 2} width={iconsize * 2} />
             <Text style={{borderWidth: 0}}>{'Mendengarkan'}</Text>
+            {this.props.appmode == 1 && (
+              <Text
+                style={{
+                  borderWidth: 0,
+                  fontSize: moderateScale(25),
+                  fontFamily: fonts.FONT_PRIMARY,
+                }}>
+                {'Mendengarkan'}
+              </Text>
+            )}
           </View>
         )}
       </View>
     );
   }
 }
+
+function mapStateToProps(state) {
+  return {
+    friendlist: state.friendlist,
+    token: state.token,
+    appmode: state.appmode,
+  };
+}
+export default connect(mapStateToProps)(VoicesComponent);

@@ -3,6 +3,7 @@ import {Text, View, Alert, StyleSheet} from 'react-native';
 //Third
 import Geolocation from 'react-native-geolocation-service';
 import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
+import getDirections from 'react-native-google-maps-directions';
 import {lineString as makeLineString} from '@turf/helpers';
 import findDistance from '@turf/distance';
 import PulseCircleLayer from './PulseCircleLayer';
@@ -15,7 +16,20 @@ import ACTION_TYPE from '../redux/actions/actions';
 import Constants from '../configs/constant';
 import Buttons from '../components/Buttons';
 import {styles, colors} from '../styles';
-import {convertToArrayOfObjects} from '../configs/utils';
+import {
+  convertToArrayOfObjects,
+  convertHeight,
+  callVibrate,
+  onCallTTS,
+  showToast,
+} from '../configs/utils';
+import {convertWidth} from './../configs/utils';
+
+import Iconmove from '../assets/images/vector/walk.svg';
+import Iconrefresh from '../assets/images/vector/refresh.svg';
+import IconCenter from '../assets/images/vector/iconcentermap.svg';
+import {moderateScale} from '../styles/scaling';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 let context = null;
 class MapsComponent extends PureComponent {
@@ -23,12 +37,17 @@ class MapsComponent extends PureComponent {
     super(props);
 
     this.state = {
-      latitude: null,
-      longitude: null,
-      latitudeDelta: 1,
-      longitudeDelta: 1,
+      latitude: -6.2188339,
+      longitude: 106.7950098,
+      latitudeDelta: 0.001,
+      longitudeDelta: 0.001,
       direction: null,
-      region: null,
+      region: {
+        latitude: -6.2188339,
+        longitude: 106.7950098,
+        longitudeDelta: 0.001,
+        latitudeDelta: 0.001,
+      },
       direction: null,
       routeSimulator: null,
       currentpoint: null,
@@ -68,12 +87,15 @@ class MapsComponent extends PureComponent {
   //RECEIVED UPDATE PROPS
   static getDerivedStateFromProps(props, state) {
     if (props.target !== state.target) {
+      console.log('Map.js => getDerivedStateFromProps', props.target);
+
       context.onGetDirection(props.target);
-      console.log('Map.js => target', props.target);
       return {
         target: props.target,
         direction: null,
       };
+
+      console.log('Map.js => target', props.target);
     }
     return null;
   }
@@ -125,10 +147,12 @@ class MapsComponent extends PureComponent {
   }
   //
   onGetDirection(target) {
-    const {region} = this.state;
+    const {latitude, longitude} = this.state;
+
+    if (!target) return;
     if (target) {
-      let concatLot = [region.longitude, region.latitude];
-      let locTarget = [target.long, target.lat];
+      let concatLot = [longitude, latitude];
+      let locTarget = [parseFloat(target.long), parseFloat(target.lat)];
       console.log('onGetDirection', concatLot);
 
       this.getDirectionsNavigation(concatLot, locTarget);
@@ -226,17 +250,80 @@ class MapsComponent extends PureComponent {
       />
     );
   }
+  //START NAVIGATE
+  onStop() {
+    this.setState({direction: null});
+    this.props.onCancel();
+  }
+  onStart() {
+    const {target} = this.state;
+    const {users} = this.props;
+    console.log('mapsbox.js => onStart');
+    console.log('mapsbox.js => user ', users);
+    console.log('mapsbox.js => target ', target);
+    callVibrate();
+
+    onCallTTS('Memulai Navigasi');
+
+    //WITH GOOGLE APPS
+    const data = {
+      source: {
+        latitude: parseFloat(users.lat),
+        longitude: parseFloat(users.long),
+      },
+      destination: {
+        latitude: parseFloat(target.lat),
+        longitude: parseFloat(target.long),
+      },
+      params: [
+        {
+          key: 'travelmode',
+          value: 'walking', // may be "walking", "bicycling" or "transit" as well
+        },
+        {
+          key: 'dir_action',
+          value: 'navigate', // this instantly initializes navigation using the given travel mode
+        },
+      ],
+    };
+    getDirections(data);
+  }
+  //
+
+  myLocationChange = event => {
+    const myLocation = event.nativeEvent.coordinate;
+    // console.log('myLocationChange', myLocation);
+    let latitude = myLocation.latitude;
+    let longitude = myLocation.longitude;
+
+    //console.log('myLocationChange => tempregion', tempregion);
+    //this.setState({latitude, longitude});
+    let temp = Object.assign({}, this.props.users);
+    //(temp.lat = latitude), (temp.long = longitude), this.props.updateuser(temp);
+  };
+  onCenterPosition() {
+    this.setState({
+      region: {
+        latitude: this.props.users.lat,
+        longitude: this.props.users.long,
+        longitudeDelta: 0.001,
+        latitudeDelta: 0.001,
+      },
+    });
+  }
   //
   render() {
-    const {latitude, longitude} = this.state;
+    const {latitude, longitude, target} = this.state;
     return (
       <View style={styles.container}>
         {latitude && longitude && (
           <MapView
-            style={[StyleSheet.absoluteFillObject, {position: 'absolute'}]}
+            ref={res => (this.mapslayout = res)}
+            style={[StyleSheet.absoluteFillObject, {width: convertWidth(100)}]}
             provider={PROVIDER_GOOGLE}
             showsUserLocation
             initialRegion={this.state.region}
+            onUserLocationChange={this.myLocationChange}
             onRegionChange={this.onregionchange.bind(this)}
             region={{
               latitude: latitude ? latitude : -6.2188339,
@@ -245,18 +332,112 @@ class MapsComponent extends PureComponent {
               longitudeDelta: this.state.longitudeDelta,
             }}>
             {this.renderLineRoute()}
-            <Marker
+            {/* <Marker
               coordinate={this.state.region}
               title={'Your Location'}
               description={`${latitude}.${longitude}`}
-            />
+            /> */}
+            {target && (
+              <Marker
+                coordinate={{
+                  latitude: parseFloat(target.lat),
+                  longitude: parseFloat(target.long),
+                  longitudeDelta: 0.001,
+                  latitudeDelta: 0.001,
+                }}
+                title={`${target.name} Location`}
+                description={`${target.lat}.${target.long}`}
+              />
+            )}
           </MapView>
         )}
-        <View style={{position: 'absolute'}}>
-          <Text>{JSON.stringify(this.state.trackingposition)}</Text>
-        </View>
+
+        {this.onRenderNavi()}
+        {this.onRenderCenter()}
       </View>
     );
+  }
+  //COMMAND
+  onRenderCenter() {
+    return (
+      <View
+        style={{
+          top: '5%',
+          right: '5%',
+          width: moderateScale(50),
+          height: moderateScale(50),
+          position: 'absolute',
+          backgroundColor: colors.background.COLOR_PRIMARY_2,
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: moderateScale(40),
+        }}>
+        <Buttons
+          onPressButton={() => this.onCenterPosition()}
+          style={{
+            backgroundColor: '#f0f0f0',
+            width: moderateScale(50),
+            height: moderateScale(50),
+            borderWidth: 1,
+            borderRadius: moderateScale(40),
+          }}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <IconCenter height={moderateScale(40)} width={moderateScale(40)} />
+          </View>
+        </Buttons>
+        <TouchableOpacity onPress={() => showToast('Clik')}></TouchableOpacity>
+      </View>
+    );
+  }
+  onRenderNavi() {
+    if (this.state.target) {
+      return (
+        <View
+          style={{
+            bottom: '5%',
+            width: convertWidth(100),
+            position: 'absolute',
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+          }}>
+          <Buttons
+            onPressButton={() => this.onStop()}
+            style={{
+              backgroundColor: '#f0f0f0',
+              width: convertWidth(40),
+              height: convertHeight(15),
+              borderWidth: 1,
+              borderRadius: 10,
+            }}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Iconrefresh
+                height={moderateScale(30)}
+                width={moderateScale(30)}
+              />
+              <Text style={{borderWidth: 0, fontSize: moderateScale(18)}}>
+                {'Ulang'}
+              </Text>
+            </View>
+          </Buttons>
+          <Buttons
+            onPressButton={() => this.onStart()}
+            style={{
+              backgroundColor: '#f0f0f0',
+              width: convertWidth(40),
+              height: convertHeight(15),
+              borderWidth: 1,
+              borderRadius: 10,
+            }}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Iconmove height={moderateScale(30)} width={moderateScale(30)} />
+              <Text style={{borderWidth: 0, fontSize: moderateScale(18)}}>
+                {'Mulai'}
+              </Text>
+            </View>
+          </Buttons>
+        </View>
+      );
+    }
   }
 }
 function mapStateToProps(state) {

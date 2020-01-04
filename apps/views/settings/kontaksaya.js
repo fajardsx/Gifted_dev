@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Buttons from '../../components/Buttons';
 import {convertWidth, callAlert, onCallTTS} from './../../configs/utils';
-import {styles} from '../../styles';
+import {styles, fonts} from '../../styles';
 import {moderateScale} from '../../styles/scaling';
 //REDUX
 import {connect} from 'react-redux';
@@ -28,12 +28,19 @@ class KontakScreen extends Component {
   componentDidMount() {
     this.focuslistener = this.props.navigation.addListener('didFocus', () => {
       this.getKontak();
+      console.log(
+        'KontakScreen.js => didFocus target ',
+        this.props.friendtarget,
+      );
+      if (this.props.friendtarget) {
+        this.props.navigation.navigate('Home');
+      }
     });
   }
   /** API */
   //get kontak
   getKontak() {
-    console.log('home/index.js => getKontak() data ');
+    console.log('KontakScreen.js => getKontak() data ');
     //if (!data.latitude || !data.longitude) return;
 
     Constants.HEADER_POST.Authorization = 'Bearer ' + this.props.token;
@@ -41,7 +48,7 @@ class KontakScreen extends Component {
       API.MY_CONTACT,
       null,
       (callbackgetkontak = res => {
-        console.log('home/index.js => callbackgetkontak() result ', res);
+        console.log('KontakScreen.js => callbackgetkontak() result ', res);
         if (res) {
           if (res.error) {
             //callTo
@@ -135,6 +142,16 @@ class KontakScreen extends Component {
         />
       </View>
       <Text>{item.name}</Text>
+      {this.props.appmode == 1 && (
+        <Text
+          style={{
+            borderWidth: 0,
+            fontSize: moderateScale(25),
+            fontFamily: fonts.FONT_PRIMARY,
+          }}>
+          {item.name}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 }
@@ -142,6 +159,8 @@ function mapStateToProps(state) {
   return {
     friendlist: state.friendlist,
     token: state.token,
+    appmode: state.appmode,
+    friendtarget: state.currentFriendTarget,
   };
 }
 function dispatchToProps(dispatch) {
@@ -155,6 +174,11 @@ function dispatchToProps(dispatch) {
       dispatch({
         type: ACTION_TYPE.UPDATE_TARGET,
         value: values,
+      }),
+    updateTarget: data =>
+      dispatch({
+        type: ACTION_TYPE.UPDATE_TARGET,
+        value: data,
       }),
     updateFriendlist: values =>
       dispatch({

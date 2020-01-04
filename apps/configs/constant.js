@@ -1,8 +1,9 @@
 class Constants {
-  static COPYRIGHT = 'Copyright ©  2019';
+  static COPYRIGHT = 'Copyright © Gifted 2019';
   static NAME_APPS = 'Gifted';
   //VERSION
   static APP_VERSION = '1';
+  static APP_VERSION_DISPLAY = '1.0';
   static APP_STATUS = '';
   static SERVER_APP_VERSION = '0.0.1';
   static FORCE_UPDATE = 'no';
@@ -40,6 +41,7 @@ class Constants {
   //COMMAD
   static COMMAND_CARI = 1;
   static COMMAND_TAMBAH = 2;
+  static COMMAND_LOKASI = 3;
   //DEBUG
   static DEV_MODE = false;
 }

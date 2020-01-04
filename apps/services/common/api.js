@@ -10,6 +10,10 @@ class API {
   static UPLOAD_AVATAR = 'upload-avatar';
   static GET_PROFILE_FRIEND = 'profile-teman';
   static GET_PROFILE = 'my-profile';
+  static DELETE_FRIEND = 'hapus-teman';
+  static RESET_PASSWORD = 'reset-password';
+  static FORGOT_PASSWORD = 'forgot-password';
+  static SEND_CODE = 'send-code';
 }
 
 export default API;

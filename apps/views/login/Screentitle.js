@@ -5,6 +5,7 @@ import Buttons from '../../components/Buttons';
 import {convertWidth} from '../../configs/utils';
 import {moderateScale} from '../../styles/scaling';
 import {callVibrate} from './../../configs/utils';
+import Constants from '../../configs/constant';
 
 class Screentitle extends Component {
   constructor(props) {
@@ -36,6 +37,9 @@ class Screentitle extends Component {
             onPressButton={() => this.buttonEvent('registerscreen')}>
             <Text>Register</Text>
           </Buttons>
+        </View>
+        <View style={{alignItems: 'center'}}>
+          <Text>Version {Constants.APP_VERSION_DISPLAY}</Text>
         </View>
       </View>
     );

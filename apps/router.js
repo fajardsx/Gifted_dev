@@ -1,5 +1,5 @@
 import React from 'react';
-import {Image} from 'react-native';
+import {Image, View, Text} from 'react-native';
 import {createSwitchNavigator, createAppContainer} from 'react-navigation';
 import InitScreen from './views/initscreen';
 import {createStackNavigator} from 'react-navigation-stack';
@@ -18,6 +18,13 @@ import {colors, images, styles} from './styles';
 import {convertHeight} from './configs/utils';
 import {moderateScale} from './styles/scaling';
 
+import Iconhome from './assets/images/vector/home.svg';
+import IconContact from './assets/images/vector/contactsbook.svg';
+import IconAddContact from './assets/images/vector/addcontact.svg';
+import Screenforgotpassword from './views/login/ScreenForgot';
+import NavigatorScreen from './views/navigation/index';
+import ScreenResetpassword from './views/login/ScreenResetPassword';
+
 const TitleScene = createStackNavigator(
   {
     titleinitscreen: {
@@ -28,6 +35,12 @@ const TitleScene = createStackNavigator(
     },
     registerscreen: {
       screen: ScreenRegister,
+    },
+    forgotscreen: {
+      screen: Screenforgotpassword,
+    },
+    resetpasswordscreen: {
+      screen: ScreenResetpassword,
     },
   },
   {
@@ -75,7 +88,7 @@ const TabApp = createBottomTabNavigator(
         height: 5,
       },
       showIcon: true,
-      showLabel: true,
+      showLabel: false,
       labelStyle: {
         fontSize: moderateScale(13),
       },
@@ -85,6 +98,7 @@ const TabApp = createBottomTabNavigator(
       },
       tabStyle: {
         height: 64,
+        justifyContent: 'center',
         //borderRightWidth: 0.5,
         //borderRightColor: "#939393"
       },
@@ -99,27 +113,36 @@ const TabApp = createBottomTabNavigator(
         let icons = null;
         if (routeName === 'Home') {
           icons = (
-            <Image
-              source={images.iconhome}
-              style={styles.tabicon}
-              tintColor={tintColor}
-            />
+            <View style={{justifyContent: 'center', alignItems: 'center'}}>
+              <Iconhome
+                height={moderateScale(25)}
+                width={moderateScale(25)}
+                fill={tintColor}
+              />
+              <Text style={{color: tintColor}}>{routeName}</Text>
+            </View>
           );
         } else if (routeName === 'Kontak Saya') {
           icons = (
-            <Image
-              source={images.iconcontact}
-              style={styles.tabicon}
-              tintColor={tintColor}
-            />
+            <View style={{justifyContent: 'center', alignItems: 'center'}}>
+              <IconContact
+                height={moderateScale(25)}
+                width={moderateScale(25)}
+                fill={tintColor}
+              />
+              <Text style={{color: tintColor}}>{routeName}</Text>
+            </View>
           );
         } else if (routeName === 'Cari Teman') {
           icons = (
-            <Image
-              source={images.iconaddcontact}
-              style={styles.tabicon}
-              tintColor={tintColor}
-            />
+            <View style={{justifyContent: 'center', alignItems: 'center'}}>
+              <IconAddContact
+                height={moderateScale(25)}
+                width={moderateScale(25)}
+                fill={tintColor}
+              />
+              <Text style={{color: tintColor}}>{routeName}</Text>
+            </View>
           );
         }
         return icons;
@@ -144,6 +167,9 @@ const InAppScene = createStackNavigator(
     },
     profilescreen: {
       screen: ProfileScreen,
+    },
+    navigatorscreen: {
+      screen: NavigatorScreen,
     },
   },
   {
