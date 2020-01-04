@@ -1,5 +1,12 @@
 import React, {Component} from 'react';
-import {View, Text, SafeAreaView, TouchableOpacity, Image} from 'react-native';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  TouchableOpacity,
+  Image,
+  Keyboard,
+} from 'react-native';
 import {styles, colors, images} from '../../styles';
 import VoicesComponent from '../../components/Voices';
 import MapsComponent from '../../components/Maps';
@@ -43,6 +50,8 @@ class HomeScreen extends Component {
       searchEnable: true,
       resultSearch: false,
       isnavi: false,
+      keyboardShow: false,
+      datalist: [],
       index: 0,
       routes: [
         {key: 'first', title: 'Peta'},
@@ -61,9 +70,26 @@ class HomeScreen extends Component {
         this.voices.init();
       }
     });
+    this.keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      this._keyboardDidShow.bind(this),
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      this._keyboardDidHide.bind(this),
+    );
   }
   componentWillUnmount() {
     console.log('home/index.js => Destroy');
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
+  }
+  _keyboardDidShow() {
+    this.setState({keyboardShow: true});
+  }
+
+  _keyboardDidHide() {
+    this.setState({keyboardShow: false});
   }
   //HandleIndexChange
   handleIndexChange = index => {
@@ -109,17 +135,28 @@ class HomeScreen extends Component {
   onCallbackResult(data) {
     let dataSplit = data.split(' ');
     console.log('home/index.js => oncallbackResult ', dataSplit);
-
-    dataSplit.map((res, index) => {
-      console.log('home/index.js => oncallbackResult ', findCommad(res));
-      if (findCommad(res) == Constants.COMMAND_CARI) {
-        context.props.navigation.navigate('resultsearchscreen', {
-          valuesearch: dataSplit[index + 1] ? dataSplit[index + 1] : '',
-          functOnProcess: () => this.onProcessDirection(),
-        });
-      }
-    });
+    if (this.state.index == 0) {
+      dataSplit.map((res, index) => {
+        console.log('home/index.js => oncallbackResult MAP ', findCommad(res));
+        if (findCommad(res) == Constants.COMMAND_CARI) {
+          context.props.navigation.navigate('resultsearchscreen', {
+            valuesearch: dataSplit[index + 1] ? dataSplit[index + 1] : '',
+            functOnProcess: () => this.onProcessDirection(),
+          });
+        }
+      });
+    } else if (this.state.index == 1) {
+      console.log('home/index.js => oncallbackResult handsign ', dataSplit);
+      let tmpList = Object.assign([], this.state.datalist);
+      tmpList.push({result: data});
+      this.setState({datalist: tmpList});
+    }
   }
+  onUpdateListHandSign = txt => {
+    let tmpList = Object.assign([], this.state.datalist);
+    tmpList.push({result: txt});
+    this.setState({datalist: tmpList});
+  };
   //Setting
   //
   onCloseModal() {
@@ -262,7 +299,7 @@ class HomeScreen extends Component {
                     color:
                       focused == true
                         ? colors.tabsstyle.COLOR_PRIMARY_1
-                        : colors.tabsstyle.COLOR_PRIMARY_2,
+                        : colors.tabsstyle.COLOR_PRIMARY_4,
                     margin: 8,
                   }}>
                   {route.title}
@@ -271,19 +308,11 @@ class HomeScreen extends Component {
             />
           )}
           navigationState={this.state}
-          renderScene={SceneMap({first: this.sceneMap, second: this.sceneChat})}
+          renderScene={this.renderScene}
           onIndexChange={this.handleIndexChange}
           initialLayout={{width: convertWidth(100), height: 200}}
         />
-        {searchEnable && this.props.friendtarget == null && index == 0 && (
-          <VoicesComponent
-            ref={c => (this.voices = c)}
-            {...this.props}
-            onCallback={this.onCallbackResult.bind(this)}
-            onProcess={this.onProcessDirection.bind(this)}
-            style={{position: 'absolute', left: convertWidth(30)}}
-          />
-        )}
+        {this.addVoiceManager()}
       </View>
     );
   }
@@ -344,7 +373,7 @@ class HomeScreen extends Component {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          {this.switchMode()}
+          {}
         </View>
       </View>
     );
@@ -395,23 +424,71 @@ class HomeScreen extends Component {
       </View>
     );
   }
-
-  sceneMap = () => (
-    <MapsComponent
-      ref={this.mapboxs}
-      target={this.props.friendtarget}
-      onCancel={this.onCancelPress.bind(this)}
-      isnavi={this.state.isnavi}
-      onUpdate={this.postUpdatePosition.bind(this)}
-    />
-  );
-  sceneChat = () => (
-    <ChatHandsign
-      onCancel={this.onCancelPress.bind(this)}
-      isnavi={this.state.isnavi}
-      onUpdate={this.postUpdatePosition.bind(this)}
-    />
-  );
+  renderScene = ({route}) => {
+    switch (route.key) {
+      case 'first':
+        return (
+          <View style={{flex: 1}}>
+            {this.state.permissiongrand && (
+              <MapsComponent
+                onCallback={this.onCallbackResult.bind(this)}
+                onProcess={this.onProcessDirection.bind(this)}
+                ref={this.mapboxs}
+                target={this.props.friendtarget}
+                onCancel={this.onCancelPress.bind(this)}
+                isnavi={this.state.isnavi}
+                onUpdate={this.postUpdatePosition.bind(this)}
+              />
+            )}
+          </View>
+        );
+      case 'second':
+        return (
+          <ChatHandsign
+            datalist={this.state.datalist}
+            onUpdateList={this.onUpdateListHandSign.bind(this)}
+            onCancel={this.onCancelPress.bind(this)}
+            isnavi={this.state.isnavi}
+            onUpdate={this.postUpdatePosition.bind(this)}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+  addVoiceManager() {
+    const {keyboardShow, searchEnable, index} = this.state;
+    if (keyboardShow) return <View />;
+    if (index == 0) {
+      if (searchEnable && this.props.friendtarget == null) {
+        return (
+          <VoicesComponent
+            ref={c => (this.voices = c)}
+            {...this.props}
+            onCallback={this.onCallbackResult.bind(this)}
+            onProcess={this.onProcessDirection.bind(this)}
+            label={index == 1 ? 'Sebutkan\nKata' : 'Cari\nLokasi'}
+            tts={index == 1 ? 'Sebutkan Kata' : 'Cari Lokasi'}
+            style={{position: 'absolute', bottom: '5%', left: '32%'}}
+          />
+        );
+      }
+    } else if (index == 1) {
+      if (searchEnable) {
+        return (
+          <VoicesComponent
+            ref={c => (this.voices = c)}
+            {...this.props}
+            onCallback={this.onCallbackResult.bind(this)}
+            onProcess={this.onProcessDirection.bind(this)}
+            label={index == 1 ? 'Sebutkan\nKata' : 'Cari\nLokasi'}
+            tts={index == 1 ? 'Sebutkan Kata' : 'Cari Lokasi'}
+            style={{position: 'absolute', bottom: '5%', left: '32%'}}
+          />
+        );
+      }
+    }
+  }
   //modal search
   modalSearch() {}
 }

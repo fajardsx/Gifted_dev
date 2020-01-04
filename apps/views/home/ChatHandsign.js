@@ -6,9 +6,10 @@ import {
   TouchableOpacity,
   FlatList,
   SafeAreaView,
-  Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import {styles, fonts} from '../../styles';
+import {styles, fonts, colors} from '../../styles';
 import Modal from 'react-native-modal';
 
 //REDUX
@@ -19,6 +20,7 @@ import MapsBoxComponent from '../../components/Mapsbox';
 import {moderateScale} from '../../styles/scaling';
 import IconSearch from '../../assets/images/vector/search-solid.svg';
 import IconMic from '../../assets/images/vector/microphone.svg';
+import IconEnter from '../../assets/images/vector/Enter.svg';
 import {
   callVibrate,
   onCallTTS,
@@ -38,7 +40,13 @@ class ChatScreen extends PureComponent {
     this.state = {
       permissiongrand: false,
       searchtxt: '',
-      datalist: [],
+      datalist: [
+        {result: 'hallo'},
+        {result: 'hallo'},
+        {result: 'hallo'},
+        {result: 'hallo'},
+        {result: 'hallo'},
+      ],
     };
   }
   componentDidMount() {}
@@ -54,6 +62,18 @@ class ChatScreen extends PureComponent {
   //     return state;
   //   }
   //Callback
+  static getDerivedStateFromProps(props, state) {
+    if (props.datalist != state.datalist) {
+      console.log(
+        'hChathansign.js => getDerivedStateFromProps ',
+        props.datalist,
+      );
+      return {
+        datalist: props.datalist,
+      };
+    }
+    return null;
+  }
   onCallbackResult(data) {
     this.setState({datalist: []}, () => {
       //let dataSplit = data.split(' ');
@@ -95,13 +115,7 @@ class ChatScreen extends PureComponent {
     callVibrate();
   }
   onChangeInput = text => {
-    this.setState({searchtxt: text}, () => {
-      if (this.state.searchtxt.length >= 3) {
-        this.processSearch();
-      } else {
-        this.setState({datalist: []});
-      }
-    });
+    this.setState({searchtxt: text});
   };
   //FILTER
   processSearch() {
@@ -116,80 +130,87 @@ class ChatScreen extends PureComponent {
   render() {
     //const {permissiongrand} = this.state;
     return (
-      <SafeAreaView style={styles.containerDimension}>
-        <View style={{flex: 1, backgroundColor: '#fff', alignItems: 'center'}}>
-          {
-            <FlatList
-              style={{
-                //paddingVertical: 10,
-
-                width: moderateScale(350),
-                //borderWidth: 1,
-              }}
-              extraData={this.state}
-              data={this.state.datalist}
-              keyExtractor={(item, index) => {
-                return index.toString();
-              }}
-              renderItem={this.celllist}
-            />
-          }
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : null}
+        style={{
+          flex: 1,
+          backgroundColor: colors.background.COLOR_PRIMARY_1,
+        }}>
+        <SafeAreaView style={[styles.container, {alignItems: 'center'}]}>
           <View
             style={{
-              flexDirection: 'row',
-              borderWidth: 1,
-              borderColor: '#dedcd7',
-              borderRadius: 10,
-              //backgroundColor: '#ededed',
-              width: convertWidth(95),
-              height: convertWidth(10),
-              //justifyContent: 'center',
+              flex: 0.6,
+              paddingVertical: 10,
+              backgroundColor: '#fff',
               alignItems: 'center',
-              //paddingTop: '10%',
             }}>
-            <TextInput
-              onChangeText={this.onChangeInput}
-              defaultValue={this.state.searchtxt}
-              style={[
-                {
-                  //borderWidth: 1,
-                  marginLeft: 10,
-                  color: '#000',
-                  fontSize: moderateScale(15),
-                  width: convertWidth(80),
-                  height: moderateScale(40),
-                },
-              ]}
-              textAlignVertical={'bottom'}
-              placeholder={'Cari'}
-            />
-            <IconSearch height={moderateScale(15)} width={moderateScale(15)} />
-          </View>
-          {this.state.datalist.length == 0 && this.state.searchtxt.length > 2 && (
-            <View
-              style={{
-                height: moderateScale(300),
-                justifyContent: 'center',
-              }}>
-              <Text
+            {
+              <FlatList
+                ref={res => (this.chat = res)}
                 style={{
-                  fontSize: moderateScale(15),
-                }}>{`Kontak ${this.state.searchtxt} tidak ditemukan`}</Text>
-            </View>
-          )}
-
-          <VoicesComponent
-            onCallback={this.onCallbackResult.bind(this)}
-            label={'Sebutkan\nKata'}
-            tts={'Sebutkan Kata'}
-            style={{
-              //bottom: 0,
-              bottom: '35%',
-              left: '30%',
-            }}
-          />
-        </View>
-      </SafeAreaView>
+                  height: moderateScale(200),
+                  width: convertWidth(100),
+                  //borderWidth: 1,
+                }}
+                onContentSizeChange={() => {
+                  this.chat.scrollToEnd({animated: true});
+                }}
+                extraData={this.state}
+                data={this.state.datalist}
+                keyExtractor={(item, index) => {
+                  return index.toString();
+                }}
+                renderItem={this.celllist}
+              />
+            }
+          </View>
+          {this.addInput()}
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    );
+  }
+  addInput() {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          borderWidth: 1,
+          borderColor: '#dedcd7',
+          borderRadius: 10,
+          backgroundColor: '#ededed',
+          width: convertWidth(95),
+          height: convertWidth(10),
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <TextInput
+          onChangeText={this.onChangeInput}
+          defaultValue={this.state.searchtxt}
+          onSubmitEditing={e => {
+            console.log(
+              'hChathansign.js => onSubmitEditing ',
+              e.nativeEvent.text,
+            );
+            this.setState({searchtxt: ''});
+            this.props.onUpdateList(e.nativeEvent.text);
+          }}
+          style={[
+            {
+              //borderWidth: 1,
+              marginLeft: 10,
+              color: '#000',
+              fontSize: moderateScale(15),
+              width: convertWidth(85),
+              height: moderateScale(40),
+            },
+          ]}
+          textAlignVertical={'bottom'}
+          placeholder={'Masukan kata'}
+        />
+        <TouchableOpacity>
+          <IconEnter height={moderateScale(15)} width={moderateScale(15)} />
+        </TouchableOpacity>
+      </View>
     );
   }
   celllist = ({item, index}) => (
@@ -197,7 +218,8 @@ class ChatScreen extends PureComponent {
       onPress={() => this.onSelectFriend(item)}
       style={{
         borderWidth: 1,
-        width: convertWidth(90),
+        margin: 10,
+        width: convertWidth(95),
         minHeight: moderateScale(40),
         //flexDirection: 'row',
         //alignItems: 'center',

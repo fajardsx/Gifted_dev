@@ -7,6 +7,7 @@ import {
   FlatList,
   SafeAreaView,
   Image,
+  Keyboard,
 } from 'react-native';
 import {styles} from '../../styles';
 import Modal from 'react-native-modal';
@@ -30,6 +31,7 @@ class SearchResulthScreen extends PureComponent {
     super(props);
     this.state = {
       permissiongrand: false,
+      keyboardShow: false,
       searchtxt: '',
       datalist: this.props.friendlist,
     };
@@ -40,11 +42,30 @@ class SearchResulthScreen extends PureComponent {
     console.log('SearchResulthScreen.js => findTxt ', findTxt);
     this.props.updateTarget(null);
     this.setState({searchtxt: findTxt}, () => {
-      this.processSearch();
+      if (findTxt.length >= 3) {
+        this.processSearch();
+      }
     });
+    this.keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      this._keyboardDidShow.bind(this),
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      this._keyboardDidHide.bind(this),
+    );
   }
   componentWillUnmount() {
     console.log('SearchResulthScreen.js => Destroy ');
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
+  }
+  _keyboardDidShow() {
+    this.setState({keyboardShow: true});
+  }
+
+  _keyboardDidHide() {
+    this.setState({keyboardShow: false});
   }
   // static getDerivedStateFromProps(props, state) {
   //   if (props.valueSearch !== state.searchtxt) {
@@ -78,7 +99,9 @@ class SearchResulthScreen extends PureComponent {
   }
   onChangeInput = text => {
     this.setState({searchtxt: text}, () => {
-      this.processSearch();
+      if (text.length >= 3) {
+        this.processSearch();
+      }
     });
   };
   //FILTER
@@ -131,7 +154,7 @@ class SearchResulthScreen extends PureComponent {
   }
   //RENDER
   render() {
-    //const {permissiongrand} = this.state;
+    const {keyboardShow} = this.state;
     return (
       <SafeAreaView style={styles.container}>
         <View style={{flex: 1, backgroundColor: '#fff', alignItems: 'center'}}>
@@ -169,7 +192,12 @@ class SearchResulthScreen extends PureComponent {
           </View>
           {this.state.datalist.length > 0 && (
             <FlatList
-              style={{paddingVertical: 10}}
+              style={{
+                height: moderateScale(200),
+                width: convertWidth(100),
+                paddingVertical: moderateScale(10),
+                //borderWidth: 1,
+              }}
               extraData={this.state}
               data={this.state.datalist}
               keyExtractor={(item, index) => {
@@ -187,49 +215,51 @@ class SearchResulthScreen extends PureComponent {
                 }}>{`Lokasi ${this.state.searchtxt} tidak ditemukan`}</Text>
             </View>
           )}
-
-          <VoicesComponent
-            onCallback={this.onCallbackResult.bind(this)}
-            style={{
-              position: 'absolute',
-              bottom: moderateScale(30),
-              top: null,
-              left: moderateScale(90),
-            }}
-          />
+          {keyboardShow == false && (
+            <VoicesComponent
+              onCallback={this.onCallbackResult.bind(this)}
+              style={{
+                position: 'absolute',
+                bottom: '5%',
+                left: '32%',
+              }}
+            />
+          )}
         </View>
       </SafeAreaView>
     );
   }
   celllist = ({item, index}) => (
-    <TouchableOpacity
-      onPress={() => this.onSelectFriend(item)}
-      style={{
-        borderWidth: 1,
-        width: convertWidth(90),
-        minHeight: moderateScale(40),
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderRadius: 10,
-        marginBottom: 5,
-        paddingVertical: moderateScale(10),
-      }}>
-      <View style={[styles.cellprofilsize, {marginHorizontal: 10}]}>
-        <Image
-          style={[
-            styles.cellprofilsize,
-            {borderRadius: moderateScale(100), overflow: 'hidden'},
-          ]}
-          source={
-            item.avatar
-              ? {uri: item.avatar}
-              : require('../../assets/images/profilpicture.png')
-          }
-          resizeMode={'cover'}
-        />
-      </View>
-      <Text>{item.name}</Text>
-    </TouchableOpacity>
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <TouchableOpacity
+        onPress={() => this.onSelectFriend(item)}
+        style={{
+          borderWidth: 1,
+          width: convertWidth(90),
+          minHeight: moderateScale(40),
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderRadius: 10,
+          marginBottom: 5,
+          paddingVertical: moderateScale(10),
+        }}>
+        <View style={[styles.cellprofilsize, {marginHorizontal: 10}]}>
+          <Image
+            style={[
+              styles.cellprofilsize,
+              {borderRadius: moderateScale(100), overflow: 'hidden'},
+            ]}
+            source={
+              item.avatar
+                ? {uri: item.avatar}
+                : require('../../assets/images/profilpicture.png')
+            }
+            resizeMode={'cover'}
+          />
+        </View>
+        <Text>{item.name}</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 

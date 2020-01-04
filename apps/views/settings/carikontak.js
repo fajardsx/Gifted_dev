@@ -219,15 +219,28 @@ class CariKontakScreen extends PureComponent {
             <IconSearch height={moderateScale(15)} width={moderateScale(15)} />
           </View>
           {this.state.datalist.length > 0 && (
-            <FlatList
-              style={{paddingVertical: 10}}
-              extraData={this.state}
-              data={this.state.datalist}
-              keyExtractor={(item, index) => {
-                return index.toString();
-              }}
-              renderItem={this.celllist}
-            />
+            <View
+              style={{
+                height: moderateScale(300),
+                width: convertWidth(100),
+                marginTop: 5,
+                justifyContent: 'center',
+                //borderWidth: 1,
+              }}>
+              <FlatList
+                style={{
+                  height: moderateScale(100),
+                  width: convertWidth(100),
+                  paddingVertical: 10,
+                }}
+                extraData={this.state}
+                data={this.state.datalist}
+                keyExtractor={(item, index) => {
+                  return index.toString();
+                }}
+                renderItem={this.celllist}
+              />
+            </View>
           )}
           {this.state.datalist.length == 0 && this.state.searchtxt.length > 2 && (
             <View
@@ -247,7 +260,7 @@ class CariKontakScreen extends PureComponent {
             label={'Cari\nTeman'}
             style={{
               //bottom: 0,
-              top: '60%',
+              bottom: '20%',
               left: '30%',
             }}
           />
@@ -256,34 +269,42 @@ class CariKontakScreen extends PureComponent {
     );
   }
   celllist = ({item, index}) => (
-    <TouchableOpacity
-      onPress={() => this.onSelectFriend(item)}
+    <View
       style={{
-        borderWidth: 1,
-        width: convertWidth(90),
-        minHeight: moderateScale(40),
-        flexDirection: 'row',
+        flex: 1,
+        justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 10,
-        marginBottom: 5,
-        paddingVertical: moderateScale(10),
       }}>
-      <View style={[styles.cellprofilsize, {marginHorizontal: 10}]}>
-        <Image
-          style={[
-            styles.cellprofilsize,
-            {borderRadius: moderateScale(100), overflow: 'hidden'},
-          ]}
-          source={
-            item.avatar
-              ? {uri: item.avatar}
-              : require('../../assets/images/profilpicture.png')
-          }
-          resizeMode={'cover'}
-        />
-      </View>
-      <Text>{item.name}</Text>
-    </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => this.onSelectFriend(item)}
+        style={{
+          borderWidth: 1,
+          padding: 1,
+          width: convertWidth(95),
+          minHeight: moderateScale(40),
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderRadius: 10,
+          marginBottom: 5,
+          paddingVertical: moderateScale(10),
+        }}>
+        <View style={[styles.cellprofilsize, {marginHorizontal: 10}]}>
+          <Image
+            style={[
+              styles.cellprofilsize,
+              {borderRadius: moderateScale(100), overflow: 'hidden'},
+            ]}
+            source={
+              item.avatar
+                ? {uri: item.avatar}
+                : require('../../assets/images/profilpicture.png')
+            }
+            resizeMode={'cover'}
+          />
+        </View>
+        <Text>{item.name}</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 

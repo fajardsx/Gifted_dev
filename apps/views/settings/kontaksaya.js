@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   SafeAreaView,
+  TextInput,
   Image,
 } from 'react-native';
 import Buttons from '../../components/Buttons';
@@ -18,11 +19,13 @@ import API from '../../services/common/api';
 import {callPost} from '../../services';
 import Constants from '../../configs/constant';
 import {withNavigationFocus} from 'react-navigation';
+import IconSearch from '../../assets/images/vector/search-solid.svg';
 class KontakScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
       datalist: [],
+      searchtxt: '',
     };
   }
   componentDidMount() {
@@ -56,7 +59,9 @@ class KontakScreen extends Component {
             //callAlert(Constants.NAME_APPS, `${res.error}`);
           } else if (res.success) {
             this.props.updateFriendlist(res.success);
-            this.setState({datalist: res.success});
+            this.setState({datalist: res.success}, () => {
+              this.processSearch();
+            });
           }
         }
       }),
@@ -68,6 +73,41 @@ class KontakScreen extends Component {
       ismykontak: true,
     });
   }
+  onChangeInput = text => {
+    this.setState({searchtxt: text}, () => {
+      //if (text.length >= 3) {
+      this.processSearch();
+      // }
+    });
+  };
+  //FILTER
+  processSearch() {
+    const {searchtxt, data} = this.state;
+    console.log('data', this.props.friendlist);
+    let listname = '';
+    let resultSearch = this.props.friendlist.filter(res => {
+      let resData = '';
+
+      // let keyCity = res.city_name ? res.city_name.toUpperCase() : '';
+      let keyName = res ? res.name.toUpperCase() : '';
+      console.log('processSearch() => res', res);
+      console.log('processSearch() => searchtxt', searchtxt);
+      resData = `${keyName} `;
+      listname += resData;
+      const textData = searchtxt.toUpperCase();
+
+      return resData.indexOf(textData) > -1;
+    });
+
+    console.log('processSearch() => data', resultSearch);
+
+    this.setState({
+      datalist: resultSearch,
+    });
+
+    //that.filterLocation(resultSearch)
+  }
+  //
   render() {
     const {datalist} = this.state;
     return (
@@ -91,7 +131,38 @@ class KontakScreen extends Component {
             {'Kontak Saya'}
           </Text>
         </View>
-
+        <View style={{paddingVertical: 10}} />
+        <View
+          style={{
+            flexDirection: 'row',
+            borderWidth: 1,
+            borderColor: '#dedcd7',
+            borderRadius: 25,
+            //backgroundColor: '#ededed',
+            width: convertWidth(80),
+            height: convertWidth(10),
+            //justifyContent: 'center',
+            alignItems: 'center',
+            //paddingTop: '10%',
+          }}>
+          <TextInput
+            onChangeText={this.onChangeInput}
+            defaultValue={this.state.searchtxt}
+            style={[
+              {
+                //borderWidth: 1,
+                marginLeft: 10,
+                color: '#000',
+                fontSize: moderateScale(15),
+                width: convertWidth(65),
+                height: moderateScale(40),
+              },
+            ]}
+            textAlignVertical={'bottom'}
+            placeholder={'Cari'}
+          />
+          <IconSearch height={moderateScale(15)} width={moderateScale(15)} />
+        </View>
         <View style={styles.container}>
           {datalist.length > 0 && (
             <FlatList

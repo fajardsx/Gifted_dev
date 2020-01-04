@@ -91,11 +91,13 @@ class VoicesComponent extends PureComponent {
     console.log('onSpeechResult', e);
     this.setState(
       {
+        isStart: false,
         results: e.value,
       },
       () => {
-        this.props.onCallback(this.state.results[0]);
         this.thisCallTTS(this.state.results[0]);
+
+        this.props.onCallback(this.state.results[0]);
       },
     );
   }
@@ -136,8 +138,7 @@ class VoicesComponent extends PureComponent {
         style={[
           {
             position: 'absolute',
-            bottom: convertHeight(5),
-            left: convertWidth(20),
+
             borderRadius: 5,
             overflow: 'hidden',
             borderWidth: 1,

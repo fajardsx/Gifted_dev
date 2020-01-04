@@ -9,6 +9,7 @@ import findDistance from '@turf/distance';
 import PulseCircleLayer from './PulseCircleLayer';
 import {directionClient} from './MapClient';
 import RouteSimulator from './RouterSimulator';
+import VoicesComponent from './Voices';
 //REDUX
 import {connect} from 'react-redux';
 import ACTION_TYPE from '../redux/actions/actions';
@@ -62,10 +63,13 @@ class MapsComponent extends PureComponent {
     context = this;
   }
   componentDidMount() {
+    //use local location first
+    if (this.props.users) {
+    }
     this.onReqUserLocation();
     this.userposition = Geolocation.watchPosition(position => {
       const lastposition = position;
-      console.log('Map.js => userposition', lastposition);
+      console.log('Map.js => userposition lastposition', lastposition);
       let trackingposition = Object.assign([], this.state.trackingposition);
       let data = {
         latitude: lastposition.coords.latitude,
@@ -133,6 +137,8 @@ class MapsComponent extends PureComponent {
           ),
         error => {
           console.log('error', error);
+          //if (error.code == 5)
+          // Alert.alert('GPS is Off', 'Please turn on GPS');
           //this.onReqUserLocation();
         },
         {
@@ -292,7 +298,7 @@ class MapsComponent extends PureComponent {
 
   myLocationChange = event => {
     const myLocation = event.nativeEvent.coordinate;
-    // console.log('myLocationChange', myLocation);
+    console.log('myLocationChange', myLocation);
     let latitude = myLocation.latitude;
     let longitude = myLocation.longitude;
 
@@ -310,6 +316,10 @@ class MapsComponent extends PureComponent {
         latitudeDelta: 0.001,
       },
     });
+  }
+  onCallbackResultMap(data) {
+    console.log('map.js => oncallbackResult ', data);
+    this.props.onCallback(data);
   }
   //
   render() {
@@ -353,11 +363,30 @@ class MapsComponent extends PureComponent {
         )}
 
         {this.onRenderNavi()}
+
         {this.onRenderCenter()}
       </View>
     );
   }
   //COMMAND
+  onProcessDirection() {
+    let name = this.props.friendtarget ? this.props.friendtarget.name : 'teman';
+    onCallTTS('Mencari Lokasi ' + name);
+    this.props.onProcess();
+  }
+  onRenderVoice() {
+    if (this.props.friendtarget == null) {
+      return (
+        <VoicesComponent
+          type={'map'}
+          ref={c => (this.voices = c)}
+          onCallbackMap={this.onCallbackResultMap.bind(this)}
+          onProcess={this.onProcessDirection.bind(this)}
+          style={{position: 'absolute', bottom: '10%', left: '30%'}}
+        />
+      );
+    }
+  }
   onRenderCenter() {
     return (
       <View
@@ -444,6 +473,7 @@ function mapStateToProps(state) {
   return {
     friendlist: state.friendlist,
     users: state.user,
+    friendtarget: state.currentFriendTarget,
   };
 }
 function dispatchToProps(dispatch) {

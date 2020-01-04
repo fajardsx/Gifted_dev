@@ -88,12 +88,12 @@ const TabApp = createBottomTabNavigator(
         height: 5,
       },
       showIcon: true,
-      showLabel: false,
+      showLabel: true,
       labelStyle: {
         fontSize: moderateScale(13),
       },
       style: {
-        backgroundColor: '#FFF',
+        //backgroundColor: '#FFF',
         height: convertHeight(11),
       },
       tabStyle: {
@@ -113,36 +113,27 @@ const TabApp = createBottomTabNavigator(
         let icons = null;
         if (routeName === 'Home') {
           icons = (
-            <View style={{justifyContent: 'center', alignItems: 'center'}}>
-              <Iconhome
-                height={moderateScale(25)}
-                width={moderateScale(25)}
-                fill={tintColor}
-              />
-              <Text style={{color: tintColor}}>{routeName}</Text>
-            </View>
+            <Iconhome
+              height={moderateScale(25)}
+              width={moderateScale(25)}
+              fill={tintColor}
+            />
           );
         } else if (routeName === 'Kontak Saya') {
           icons = (
-            <View style={{justifyContent: 'center', alignItems: 'center'}}>
-              <IconContact
-                height={moderateScale(25)}
-                width={moderateScale(25)}
-                fill={tintColor}
-              />
-              <Text style={{color: tintColor}}>{routeName}</Text>
-            </View>
+            <IconContact
+              height={moderateScale(25)}
+              width={moderateScale(25)}
+              fill={tintColor}
+            />
           );
         } else if (routeName === 'Cari Teman') {
           icons = (
-            <View style={{justifyContent: 'center', alignItems: 'center'}}>
-              <IconAddContact
-                height={moderateScale(25)}
-                width={moderateScale(25)}
-                fill={tintColor}
-              />
-              <Text style={{color: tintColor}}>{routeName}</Text>
-            </View>
+            <IconAddContact
+              height={moderateScale(25)}
+              width={moderateScale(25)}
+              fill={tintColor}
+            />
           );
         }
         return icons;

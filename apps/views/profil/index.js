@@ -247,35 +247,20 @@ class ScreenProfile extends Component {
               <View
                 style={{
                   flex: 1,
+                  marginTop: moderateScale(10),
                   borderWidth: 0,
                   alignItems: 'center',
-                  justifyContent: 'space-around',
+                  justifyContent: 'space-between',
                 }}>
-                <Buttons
-                  style={{
-                    marginTop: 30,
-                    marginHorizontal: 10,
-                    width: convertWidth(30),
-                    borderRadius: 5,
-                    elevation: 1,
-                  }}
-                  onPressButton={this.onCallLogout.bind(this)}>
-                  <View>
-                    <Text>Keluar Akun</Text>
-                    {this.props.appmode == 1 && (
-                      <Text
-                        style={{
-                          //color: colors.main.COLOR_PRIMARY_1,
-                          borderWidth: 0,
-                          fontSize: moderateScale(25),
-                          fontFamily: fonts.FONT_PRIMARY,
-                        }}>
-                        {'Keluar Akun'}
-                      </Text>
-                    )}
-                  </View>
-                </Buttons>
                 {this.addFooter()}
+                <Text
+                  style={{
+                    //color: colors.main.COLOR_PRIMARY_1,
+                    borderWidth: 0,
+                    fontSize: moderateScale(12),
+                  }}>
+                  {'ver ' + Constants.APP_VERSION_DISPLAY}
+                </Text>
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -289,7 +274,10 @@ class ScreenProfile extends Component {
     return (
       <View
         style={{
+          flexDirection: 'row',
           borderBottomWidth: 1,
+          alignItems: 'center',
+          justifyContent: 'space-between',
           paddingVertical: 15,
           backgroundColor: colors.background.COLOR_PRIMARY_1,
         }}>
@@ -300,6 +288,30 @@ class ScreenProfile extends Component {
           }}>
           {'Profil Saya'}
         </Text>
+        <Buttons
+          style={{
+            width: moderateScale(100),
+            height: moderateScale(40),
+            borderRadius: 5,
+            elevation: 1,
+            marginRight: 10,
+          }}
+          onPressButton={this.onCallLogout.bind(this)}>
+          <View>
+            <Text>Keluar Akun</Text>
+            {this.props.appmode == 1 && (
+              <Text
+                style={{
+                  //color: colors.main.COLOR_PRIMARY_1,
+                  borderWidth: 0,
+                  fontSize: moderateScale(25),
+                  fontFamily: fonts.FONT_PRIMARY,
+                }}>
+                {'Keluar Akun'}
+              </Text>
+            )}
+          </View>
+        </Buttons>
       </View>
     );
   }
@@ -360,6 +372,7 @@ class ScreenProfile extends Component {
       <View
         style={{
           //flex: 0.5,
+          marginTop:moderateScale(50),
           width: convertWidth(100),
           flexDirection: 'row',
           justifyContent: 'space-around',
