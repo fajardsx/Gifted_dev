@@ -50,7 +50,7 @@
     "redux": "^4.0.4",
     "redux-persist": "^6.0.0",
     "rn-fetch-blob": "^0.10.15",
-    "yarn": "^1.19.2"
+    "yarn": "^1.22.0"
   },
   "devDependencies": {
     "@babel/core": "^7.7.2",
